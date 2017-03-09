@@ -1,7 +1,8 @@
 import * as React from "react";
 import {ApolloProvider} from "react-apollo";
 import ApolloClient from "apollo-client";
-import {createNetworkInterface} from "apollo-client";
+// import {createNetworkInterface} from "apollo-client";
+import createNetworkInterface from 'apollo-upload-network-interface'
 
 declare let window: {__APOLLO_STATE__: any};
 
@@ -25,22 +26,10 @@ const client = new ApolloClient({
         }
         return null;
     },
-    initialState: window.__APOLLO_STATE__
+    initialState: window.__APOLLO_STATE__,
+    connectToDevTools: true
 });
-/*
-const client = new ApolloClient({
-    networkInterface: networkInterface,
-    queryTransformer: addTypename,
-    dataIdFromObject: (result: any) => {
-        if (result.id) {
-            return result.__typename + result.id;
-        }
-        return null;
-    },
-    shouldBatch: false,
-    initialState: window.__APOLLO_STATE__
-});
-*/
+
 export class App extends React.Component<any, any> {
     render() {
         return (
