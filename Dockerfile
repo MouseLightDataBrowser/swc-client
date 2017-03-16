@@ -1,13 +1,14 @@
 FROM node:7.5
 
-# Bundle app source
-COPY . /app
+WORKDIR /app
 
-# Remove dockerdevelopment dependencies
-RUN rm -rf /app/node_modules
+# Bundle app source
+COPY . .
 
 # Install production app dependencies
-RUN cd /app; npm install -g yarn
-RUN cd /app; yarn install
+RUN npm install -g yarn typescript@2.1.6
+RUN yarn install
+
+RUN tsc
 
 EXPOSE  9673
