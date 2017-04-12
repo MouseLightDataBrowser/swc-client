@@ -1,20 +1,21 @@
 const Webpack = require("webpack");
 
 const WebpackDevServer = require("webpack-dev-server");
-const webpackConfig = require("./webpack.config");
+const webpackConfig = require("./../webpack.config.js");
 
 const debug = require("debug")("ndb:swc-client:app");
 
-const PORT = 9673;
+import {Configuration} from "./configuration";
 
 const compiler = Webpack(webpackConfig);
+
 const server = new WebpackDevServer(compiler, {
     stats: {
         colors: true
     },
     proxy: {
         "/graphql": {
-            target: `http://localhost:9671`
+            target: `http://${Configuration.graphQLHostname}:${Configuration.graphQLPort}`
         }
     },
     publicPath: webpackConfig.output.publicPath,
@@ -23,6 +24,6 @@ const server = new WebpackDevServer(compiler, {
     noInfo: false,
     quiet: false});
 
-server.listen(PORT, "0.0.0.0", () =>{
-    debug(`Starting server on http://localhost:${PORT}`);
+server.listen(Configuration.port, "0.0.0.0", () =>{
+    debug(`Starting server on http://localhost:${Configuration.port}`);
 });

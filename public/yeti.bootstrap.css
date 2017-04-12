@@ -6976,7 +6976,7 @@ input[type="checkbox"] {
 .pagination > li > span,
 .pagination > li:first-child > span,
 .pagination > li:last-child > span {
-  border-radius: 3px;
+  border-radius: 0px;
 }
 .pagination-lg > li > a,
 .pagination-lg > li > span {

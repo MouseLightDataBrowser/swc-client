@@ -81,7 +81,7 @@ a.active2 {
     color: #fff;
 }
 .blue {
-    background-color: #72b5cc;
+    background-color: #5bc0de;
     color: white;
 }
 
@@ -101,3 +101,15 @@ a.active2 {
 hr.partial {
     width: 50%;
 }
+
+.footer {
+    font-size: 12px;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    padding: 10px;
+    z-index: 1000;
+    background-color: #2b2b2b;
+}
+
+.Select.is-open { position: relative; z-index: 1000; }

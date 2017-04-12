@@ -1,19 +1,21 @@
 const path = require("path");
 
+import {Configuration} from "./src/configuration";
+
 module.exports = {
     entry: [
-        `webpack-dev-server/client?http://localhost:9673/`,
+        `webpack-dev-server/client?http://localhost:${Configuration.port}/`,
         "./src/index"
     ],
     devServer: {
         proxy: {
             "/graphql": {
-                target: `http://localhost:9671`
+                target: `http://${Configuration.graphQLHostname}:${Configuration.graphQLPort}`
             }
         }
     },
     output: {
-        filename: '/bundle.js',
+        filename: 'bundle.js',
         path: '/',
         publicPath: '/static/'
     },
@@ -23,7 +25,9 @@ module.exports = {
                 test: /\.tsx?$/,
                 loader: 'ts-loader',
                 exclude: /node_modules/,
-            }
+            },
+            {test: /\.css$/, use: 'style-loader'},
+            {test: /\.css$/, use: 'css-loader'}
         ]
     },
     resolve: {
