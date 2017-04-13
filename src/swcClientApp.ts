@@ -25,5 +25,5 @@ const server = new WebpackDevServer(compiler, {
     quiet: false});
 
 server.listen(Configuration.port, "0.0.0.0", () =>{
-    debug(`Starting server on http://localhost:${Configuration.port}`);
+    debug(`Starting swc client server on http://localhost:${Configuration.port}`);
 });

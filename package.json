@@ -6,6 +6,7 @@
   "author": "Patrick Edson <pedson@leapscientific.com>",
   "license": "Janelia",
   "scripts": {
+    "start": "DEBUG=ndb* node src/swcClientApp.js",
     "debug": "DEBUG=ndb* node $NODE_DEBUG_OPTION src/swcClientApp.js",
     "test-docker": "docker build .",
     "docker-build": "docker build --tag mouselightdatabrowser/swc-client .",

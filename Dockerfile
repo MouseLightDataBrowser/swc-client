@@ -10,6 +10,6 @@ RUN yarn install
 
 RUN tsc
 
-CMD ["npm", "run", "debug"]
+CMD ["npm", "run", "start"]
 
 EXPOSE  9653
