@@ -12,7 +12,7 @@ const configurations: any = {
         graphQLPort: 9651
     },
     production: {
-        port: 9663,
+        port: 9653,
         graphQLEndpoint: "/graphQL",
         graphQLHostname: "swc-api",
         graphQLPort: 9651
