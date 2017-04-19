@@ -15,7 +15,7 @@ export class TracingStructureSelect extends DynamicSelect<ITracingStructure> {
 
         return (
             <span>
-                <Badge >{isAxon ? "A" : "D"}</Badge>
+                <Badge>{isAxon ? "A" : "D"}</Badge>
                 &nbsp;{displayTracingStructure(option)}
             </span>
         );
