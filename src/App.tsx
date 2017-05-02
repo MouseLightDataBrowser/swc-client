@@ -1,12 +1,12 @@
 import * as React from "react";
 import {ApolloProvider} from "react-apollo";
 import ApolloClient from "apollo-client";
-import createNetworkInterface from 'apollo-upload-network-interface'
+import createNetworkInterface from "apollo-upload-network-interface"
 import {Navbar, Nav, Glyphicon, NavItem} from "react-bootstrap";
-import {ToastContainer} from 'react-toastify';
+import {ToastContainer} from "react-toastify";
 
-import 'react-toastify/dist/ReactToastify.min.css';
-import 'rc-slider/assets/index.css';
+import "react-toastify/dist/ReactToastify.min.css";
+import "rc-slider/assets/index.css";
 
 import {Content} from "./Content";
 

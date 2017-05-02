@@ -19,7 +19,8 @@ interface IDynamicEditFieldProps {
 }
 
 interface IDynamicTableEditFieldState {
-    value?: any
+    initialPropValue?: any;
+    value?: any;
     mode?: DynamicEditFieldMode;
     showEditFail?: boolean;
 }
@@ -28,7 +29,12 @@ export class DynamicEditField extends React.Component<IDynamicEditFieldProps, ID
     constructor(props: IDynamicEditFieldProps) {
         super(props);
 
-        this.state = {value: props.initialValue, mode: DynamicEditFieldMode.Static, showEditFail: false};
+        this.state = {
+            initialPropValue: props.initialValue,
+            value: props.initialValue,
+            mode: DynamicEditFieldMode.Static,
+            showEditFail: false
+        };
     }
 
     private onEdit = () => {
@@ -70,6 +76,14 @@ export class DynamicEditField extends React.Component<IDynamicEditFieldProps, ID
     };
 
     private overlayControl: any = null;
+
+    // TODO Validate this change, needed for use in sample client, doesn't break anything here.
+    public componentWillReceiveProps(props: IDynamicEditFieldProps) {
+        this.setState({
+            initialPropValue: props.initialValue,
+            value: props.initialValue
+        }, null);
+    }
 
     public render() {
         let style = {
