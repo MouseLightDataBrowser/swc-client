@@ -1,3 +1,5 @@
+.idea
+.gitignore
+.dockerignore
 node_modules
 Dockerfile
-.dockerignore

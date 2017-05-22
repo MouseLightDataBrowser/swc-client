@@ -1,8 +1,8 @@
-FROM node:7.5
+FROM node:7.10
 
 WORKDIR /app
 
-RUN npm install -g yarn typescript
+RUN yarn global add typescript
 
 COPY . .
 
