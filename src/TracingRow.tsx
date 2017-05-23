@@ -51,8 +51,8 @@ const UpdateSwcTracingMutation = gql`mutation UpdateSwcTracing($tracing: SwcTrac
   }
 }`;
 
-const DeleteSwcTracingMutation = gql`mutation deleteTracing($tracingId: String!) {
-  deleteTracing(tracingId: $tracingId) {
+const DeleteSwcTracingMutation = gql`mutation deleteTracing($id: String!) {
+  deleteTracing(id: $id) {
     error {
       name
       message
@@ -78,6 +78,7 @@ interface ITracingsRowProps {
     tracing: ISwcTracing;
 
     refetch?(): any;
+    updateSwc?(id: string, files: any): Promise<any>;
     transformedTracingsForSwc?(id: string): Promise<ITracingsForSwcData>;
     updateSwcTracingMutation?(tracing: ISwcTracingInput): Promise<ISwcUpdateMutationOutput>;
     deleteSwcTracingMutation?(id: string): Promise<any>;
@@ -88,7 +89,7 @@ interface ITracingRowState {
     showConfirmDelete?: boolean;
     isCountingTransforms?: boolean;
     transformedCount?: number;
-
+    files?: File[];
 }
 
 @graphql(TracingsForSwcTracingMutation, {
@@ -107,8 +108,8 @@ interface ITracingRowState {
 })
 @graphql(DeleteSwcTracingMutation, {
     props: ({mutate}) => ({
-        deleteSwcTracingMutation: (tracingId: any) => mutate({
-            variables: {tracingId}
+        deleteSwcTracingMutation: (id: any) => mutate({
+            variables: {id}
         })
     })
 })
@@ -117,6 +118,7 @@ export class TracingRow extends React.Component<ITracingsRowProps, ITracingRowSt
         super(props);
 
         this.state = {
+            files: [],
             isInUpdate: false,
             showConfirmDelete: false,
             isCountingTransforms: false,
@@ -222,6 +224,7 @@ export class TracingRow extends React.Component<ITracingsRowProps, ITracingRowSt
         }
     }
 
+
     public render() {
         return (
             <tr>
@@ -239,7 +242,8 @@ export class TracingRow extends React.Component<ITracingsRowProps, ITracingRowSt
                     </Modal.Footer>
                 </Modal>
                 <td><a onClick={() => this.onShowDeleteConfirmation()}><Glyphicon
-                    glyph="trash"/></a>&nbsp;{this.props.tracing.filename}</td>
+                    glyph="trash"/></a>&nbsp;{this.props.tracing.filename}
+                </td>
                 <td>
                     <DynamicEditField initialValue={this.props.tracing.annotator}
                                       acceptFunction={value => this.onAcceptAnnotatorEdit(value)}/>
