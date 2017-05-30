@@ -1,14 +1,15 @@
 import * as React from "react";
-import {ApolloProvider} from "react-apollo";
+import {ApolloProvider, InjectedGraphQLProps, graphql} from "react-apollo";
 import ApolloClient from "apollo-client";
 import createNetworkInterface from "apollo-upload-network-interface"
-import {Navbar, Nav, Glyphicon, NavItem} from "react-bootstrap";
+import {Navbar, Nav, Glyphicon, NavItem, Badge} from "react-bootstrap";
 import {ToastContainer} from "react-toastify";
 
 import "react-toastify/dist/ReactToastify.min.css";
 import "rc-slider/assets/index.css";
 
 import {Content} from "./Content";
+import {SystemMessageQuery} from "./graphql/systemMessage";
 
 declare let window: { __APOLLO_STATE__: any };
 
@@ -29,13 +30,22 @@ const client = new ApolloClient({
     connectToDevTools: true
 });
 
-interface IHeadingProps {
+interface ISystemMessageQuery {
+    systemMessage: string;
+}
+
+interface IHeadingProps extends InjectedGraphQLProps<ISystemMessageQuery> {
     onSettingsClick(): void;
 }
 
 interface IHeadingState {
 }
 
+@graphql(SystemMessageQuery, {
+    options: {
+        pollInterval: 5000
+    }
+})
 class Heading extends React.Component<IHeadingProps, IHeadingState> {
     public render() {
         return (
@@ -51,6 +61,7 @@ class Heading extends React.Component<IHeadingProps, IHeadingState> {
                             <Glyphicon glyph="cog"/>
                         </NavItem>
                     </Nav>
+                    <Navbar.Text pullRight><Badge>{this.props.data.systemMessage}</Badge></Navbar.Text>
                 </Navbar.Collapse>
             </Navbar>);
     }
