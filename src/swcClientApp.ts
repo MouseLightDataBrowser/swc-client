@@ -18,6 +18,7 @@ const server = new WebpackDevServer(compiler, {
             target: `http://${Configuration.graphQLHostname}:${Configuration.graphQLPort}`
         }
     },
+    disableHostCheck: true,
     publicPath: webpackConfig.output.publicPath,
     hot: true,
     historyApiFallback: true,

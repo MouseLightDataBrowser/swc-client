@@ -12,7 +12,8 @@ module.exports = {
             "/graphql": {
                 target: `http://${Configuration.graphQLHostname}:${Configuration.graphQLPort}`
             }
-        }
+        },
+        disableHostCheck: true
     },
     output: {
         filename: 'bundle.js',
