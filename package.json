@@ -1,6 +1,6 @@
 {
   "name": "swc-client",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "src/swcClientApp.js",
   "repository": "https://github.com/MouseLightDataBrowser/swc-client.git",
   "author": "Patrick Edson <pedson@leapscientific.com>",
