@@ -72,7 +72,7 @@ interface ITracingsState {
                 offset: offset,
                 limit: limit,
                 sampleId: null,
-                neuronId: null,
+                neuronIds: [],
                 tracingStructureId: null,
                 annotator: null,
                 filename: null
