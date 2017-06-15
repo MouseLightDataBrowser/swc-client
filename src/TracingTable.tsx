@@ -85,7 +85,22 @@ export class TracingTable extends React.Component<ITracingsProps, ITracingsState
         this.props.data.refetch();
     }
 
-    render() {
+    private renderPanelFooter(totalCount: number, activePage: number, pageCount: number) {
+        const start = this.props.offset + 1;
+        const end = Math.min(this.props.offset + this.props.limit, totalCount);
+        return (
+            <div>
+                <span>
+                    {totalCount >= 0 ? (totalCount > 0 ? `Showing ${start} to ${end} of ${totalCount} tracings` : "It's a clean slate - upload the first tracings!") : ""}
+                </span>
+                <span className="pull-right">
+                    {`Page ${activePage} of ${pageCount}`}
+                </span>
+            </div>
+        );
+    }
+
+    public render() {
         let rows = null;
 
         if (this.props.data && !this.props.data.loading) {
@@ -102,8 +117,7 @@ export class TracingTable extends React.Component<ITracingsProps, ITracingsState
         const activePage = rows ? (this.props.offset ? (Math.floor(this.props.offset / this.props.limit) + 1) : 1) : 0;
 
         return (
-            <Panel collapsible defaultExpanded header="Existing" bsStyle="default"
-                   footer={totalCount >= 0 ? (totalCount > 0 ? `${totalCount} tracings` : "It's a clean slate upload the first tracing!") : ""}>
+            <Panel collapsible defaultExpanded bsStyle="default" header="Existing" footer={this.renderPanelFooter(totalCount, activePage, pageCount)}>
                 <PaginationHeader pageCount={pageCount}
                                   activePage={activePage}
                                   limit={this.props.limit}
