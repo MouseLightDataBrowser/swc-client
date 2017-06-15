@@ -1,34 +1,45 @@
 import * as React from "react";
-import {ApolloProvider, InjectedGraphQLProps, graphql} from "react-apollo";
-import ApolloClient from "apollo-client";
-import createNetworkInterface from "apollo-upload-network-interface"
-import {Navbar, Nav, Glyphicon, NavItem, Badge} from "react-bootstrap";
+import {InjectedGraphQLProps, graphql} from "react-apollo";
+import {Navbar, Nav, Glyphicon, NavItem, Badge, Modal, Button, Checkbox} from "react-bootstrap";
+import {Link} from "react-router";
 import {ToastContainer} from "react-toastify";
-
-import "react-toastify/dist/ReactToastify.min.css";
-import "rc-slider/assets/index.css";
 
 import {Content} from "./Content";
 import {SystemMessageQuery} from "./graphql/systemMessage";
 
-declare let window: { __APOLLO_STATE__: any };
+const logoImage = require("file-loader!../public/mouseLight_logo_web_white.png");
 
-const networkInterface = createNetworkInterface({
-    uri: "/graphql"
-});
+interface ISettingsDialogProps {
+    show: boolean
+    shouldClearCreateContentsAfterUpload: boolean;
 
-const client = new ApolloClient({
-    networkInterface: networkInterface,
-    addTypename: true,
-    dataIdFromObject: (result: any) => {
-        if (result.id) {
-            return result.__typename + result.id;
-        }
-        return null;
-    },
-    initialState: window.__APOLLO_STATE__,
-    connectToDevTools: true
-});
+    onHide(): void;
+    onChangeClearContents(shouldClear: boolean): void;
+}
+
+interface ISettingsDialogState {
+}
+
+class SettingsDialog extends React.Component<ISettingsDialogProps, ISettingsDialogState> {
+    render() {
+        return (
+            <Modal show={this.props.show} onHide={this.props.onHide} aria-labelledby="contained-modal-title-sm">
+                <Modal.Header closeButton>
+                    <Modal.Title id="contained-modal-title-sm">Settings</Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                    <Checkbox checked={this.props.shouldClearCreateContentsAfterUpload}
+                              onChange={(evt: any) => this.props.onChangeClearContents(evt.target.checked)}>
+                        Clear fields after upload
+                    </Checkbox>
+                </Modal.Body>
+                <Modal.Footer>
+                    <Button bsSize="small" onClick={this.props.onHide}>Close</Button>
+                </Modal.Footer>
+            </Modal>
+        );
+    }
+}
 
 interface ISystemMessageQuery {
     systemMessage: string;
@@ -52,11 +63,13 @@ class Heading extends React.Component<IHeadingProps, IHeadingState> {
             <Navbar fluid fixedTop style={{marginBottom: 0}}>
                 <Navbar.Header>
                     <Navbar.Brand>
-                        Mouse Light Tracing Manager
+                        <Link to="/">
+                            <img src={logoImage}/>
+                        </Link>
                     </Navbar.Brand>
                 </Navbar.Header>
                 <Navbar.Collapse>
-                    <Nav pullRight>
+                    <Nav pullRight style={{marginRight: "15px"}}>
                         <NavItem onSelect={() => this.props.onSettingsClick()}>
                             <Glyphicon glyph="cog"/>
                         </NavItem>
@@ -68,7 +81,7 @@ class Heading extends React.Component<IHeadingProps, IHeadingState> {
 }
 
 const Footer = () => (
-    <div className="container-fluid footer">
+    <div className="footer">
         Mouse Light Neuron Data Browser Copyright © 2016 - 2017 Howard Hughes Medical Institute
     </div>
 );
@@ -83,35 +96,55 @@ interface IAppProps {
 
 interface IAppState {
     isSettingsOpen?: boolean;
+    shouldClearCreateContentsAfterUpload?: boolean;
 }
 
 export class App extends React.Component<IAppProps, IAppState> {
     public constructor(props: IAppProps) {
         super(props);
 
+        let shouldClearCreateContentsAfterUpload = true;
+
+        if (typeof(Storage) !== "undefined") {
+            shouldClearCreateContentsAfterUpload = localStorage.getItem("shouldClearCreateContentsAfterUpload") == "true";
+        }
+
         this.state = {
-            isSettingsOpen: false
+            isSettingsOpen: false,
+            shouldClearCreateContentsAfterUpload
         }
     }
 
     private onSettingsClick() {
-        this.setState({isSettingsOpen: true}, null);
+        this.setState({isSettingsOpen: true});
     }
 
     private onSettingsClose() {
-        this.setState({isSettingsOpen: false}, null);
+        this.setState({isSettingsOpen: false});
+    }
+
+    private onChangeClearContents(shouldClear: boolean) {
+        this.setState({shouldClearCreateContentsAfterUpload: shouldClear});
+
+        if (typeof(Storage) !== "undefined") {
+            localStorage.setItem("shouldClearCreateContentsAfterUpload", shouldClear ? "true" : "false");
+        }
     }
 
     render() {
         return (
-            <ApolloProvider client={client}>
-                <div>
-                    <ToastContainer autoClose={6000} position="bottom-center" style={toastStyleOverride}/>
-                    <Heading onSettingsClick={() => this.onSettingsClick()}/>
-                    <Content isSettingsOpen={this.state.isSettingsOpen} onSettingsClose={() => this.onSettingsClose()}/>
-                    <Footer/>
+            <div>
+                <ToastContainer autoClose={6000} position="bottom-center" style={toastStyleOverride}/>
+                <SettingsDialog show={this.state.isSettingsOpen}
+                                shouldClearCreateContentsAfterUpload={this.state.shouldClearCreateContentsAfterUpload}
+                                onHide={() => this.onSettingsClose()}
+                                onChangeClearContents={(b: boolean) => this.onChangeClearContents(b)}/>
+                <Heading onSettingsClick={() => this.onSettingsClick()}/>
+                <div style={{marginTop: "50px", marginBottom: "40px"}}>
+                    <Content shouldClearCreateContentsAfterUpload={this.state.shouldClearCreateContentsAfterUpload}/>
                 </div>
-            </ApolloProvider>
+                <Footer/>
+            </div>
         );
     }
 }

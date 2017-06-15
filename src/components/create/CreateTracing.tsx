@@ -20,16 +20,16 @@ import {
     Label
 } from "react-bootstrap";
 
-import {ISample} from "./models/sample";
-import {INeuron} from "./models/neuron";
-import {IInjection} from "./models/injection";
-import {TracingStructureSelect} from "./TracingStructureSelect";
-import {ITracingStructure} from "./models/tracingStructure";
-import {SampleSelect} from "./SampleSelect";
-import {NeuronForSampleSelect} from "./NeuronForSampleSelect";
-import {ISwcUploadMutationOutput, ISwcUploadOutput} from "./models/swcTracing";
-import {SamplePreview} from "./components/SamplePreview";
-import {NeuronPreview} from "./components/NeuronPreview";
+import {ISample} from "../../models/sample";
+import {INeuron} from "../../models/neuron";
+import {IInjection} from "../../models/injection";
+import {TracingStructureSelect} from "../editors/TracingStructureSelect";
+import {ITracingStructure} from "../../models/tracingStructure";
+import {SampleSelect} from "../editors/SampleSelect";
+import {NeuronForSampleSelect} from "../editors/NeuronForSampleSelect";
+import {ISwcUploadMutationOutput, ISwcUploadOutput} from "../../models/swcTracing";
+import {SamplePreview} from "./SamplePreview";
+import {NeuronPreview} from "./NeuronPreview";
 
 interface ITracingStructuresQueryProps {
     tracingStructures: ITracingStructure[];
@@ -205,6 +205,7 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
     private async onUploadSwc() {
         if (this.canUploadTracing()) {
             this.setState({isInUpload: true});
+
             try {
                 const result: ISwcUploadMutationOutput = await this.props.uploadSwc(this.state.annotator, this.state.neuron.id, this.state.structure.id, this.state.files);
 
@@ -241,9 +242,8 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
         const samples = this.props.samplesQuery && !this.props.samplesQuery.loading ? this.props.samplesQuery.samples : [];
 
         return (
-            <Panel collapsible defaultExpanded header="Create" bsStyle="info"
-                   style={{marginBottom: "0px", border: "none"}}>
-                <Grid fluid style={{paddingTop: "10px"}}>
+            <Panel collapsible defaultExpanded header="Create" bsStyle="default">
+                <Grid fluid>
                     {this.renderUploadRow()}
                     {this.renderPropertiesRow(samples, tracingStructures)}
                     {this.renderSelectedSpecificsRow()}
@@ -290,13 +290,15 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
                     <FormGroup>
                         <ControlLabel>Sample</ControlLabel>
                         <InputGroup bsSize="sm">
-                            <SampleSelect options={samples}
+                            <SampleSelect idName="createTracingSampleSelect" options={samples}
                                           selectedOption={this.state.sample}
                                           disabled={this.state.isSampleLocked || this.state.isInUpload}
                                           placeholder="Select sample..."
+                                          hasLeftInputGroup={true}
+                                          hasRightInputGroup={true}
                                           onSelect={s => this.onSampleChange(s)}/>
                             <InputGroup.Button>
-                                <Button bsStyle={this.state.isSampleLocked ? "danger" : "default"}
+                                <Button bsStyle={this.state.isSampleLocked ? "danger" : "default"} bsSize="sm"
                                         disabled={this.state.sample === null || this.state.isInUpload}
                                         active={this.state.isSampleLocked}
                                         onClick={() => this.onLockSample()}>
@@ -316,7 +318,8 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
                 </Col>
                 <Col md={2}>
                     <ControlLabel>Structure</ControlLabel>
-                    <TracingStructureSelect options={tracingStructures}
+                    <TracingStructureSelect idName="createTracingStructureSelect"
+                                            options={tracingStructures}
                                             selectedOption={this.state.structure}
                                             disabled={this.state.isInUpload}
                                             placeholder="Select structure..."

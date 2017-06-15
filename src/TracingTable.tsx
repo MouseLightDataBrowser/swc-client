@@ -6,7 +6,7 @@ import gql from "graphql-tag";
 import {ISwcTracingPage} from "./models/swcTracing";
 import {ITracingStructure} from "./models/tracingStructure";
 import {TracingRow} from "./TracingRow";
-import {PaginationHeader} from "./components/PaginationHeader";
+import {PaginationHeader} from "ndb-react-components";
 
 const tracingsQuery = gql`query ($pageInput: SwcTracingPageInput) {
   tracings(pageInput: $pageInput) {
@@ -102,9 +102,8 @@ export class TracingTable extends React.Component<ITracingsProps, ITracingsState
         const activePage = rows ? (this.props.offset ? (Math.floor(this.props.offset / this.props.limit) + 1) : 1) : 0;
 
         return (
-            <Panel collapsible defaultExpanded header="Existing" bsStyle="info"
-                   footer={totalCount >= 0 ? (totalCount > 0 ? `${totalCount} tracings` : "It's a clean slate upload the first tracing!") : ""}
-                   style={{border: "none", borderBottom: "1px solid #ddd"}}>
+            <Panel collapsible defaultExpanded header="Existing" bsStyle="default"
+                   footer={totalCount >= 0 ? (totalCount > 0 ? `${totalCount} tracings` : "It's a clean slate upload the first tracing!") : ""}>
                 <PaginationHeader pageCount={pageCount}
                                   activePage={activePage}
                                   limit={this.props.limit}

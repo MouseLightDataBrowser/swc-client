@@ -1,12 +1,11 @@
 import * as React from "react";
 import {Badge} from "react-bootstrap";
 
-import {displayTracingStructure, ITracingStructure, TracingStructure} from "./models/tracingStructure";
+import {displayTracingStructure, ITracingStructure, TracingStructure} from "../../models/tracingStructure";
+import {DynamicSimpleSelect} from "ndb-react-components";
 
-import {DynamicSelect} from "./components/DynamicSelect";
-
-export class TracingStructureSelect extends DynamicSelect<ITracingStructure> {
-    protected selectDisplayForOption(option: ITracingStructure): any {
+export class TracingStructureSelect extends DynamicSimpleSelect<ITracingStructure> {
+    protected selectLabelForOption(option: ITracingStructure): any {
         return displayTracingStructure(option);
     }
 

@@ -6,7 +6,8 @@
     "module": "commonjs",
     "target": "es6",
     "experimentalDecorators": true,
-    "jsx": "react"
+    "jsx": "react",
+    "skipLibCheck": true
   },
   "include": [
     "gulpfile.ts",

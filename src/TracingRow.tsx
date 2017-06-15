@@ -8,8 +8,8 @@ const moment = require("moment");
 import {ISwcTracing, ISwcTracingInput, ISwcUpdateMutationOutput} from "./models/swcTracing";
 import {displayNeuron} from "./models/neuron";
 import {ITracingStructure} from "./models/tracingStructure";
-import {DynamicEditField} from "./components/DynamicEditField";
-import {TracingStructureSelect} from "./TracingStructureSelect";
+import {TracingStructureSelect} from "./components/editors/TracingStructureSelect";
+import {DynamicEditField} from "ndb-react-components";
 
 const TracingsForSwcTracingMutation = gql`mutation transformedTracingsForSwc($id: String!) {
   transformedTracingsForSwc(id: $id) {
@@ -250,7 +250,8 @@ export class TracingRow extends React.Component<ITracingsRowProps, ITracingRowSt
                 </td>
                 <td>{displayNeuron(this.props.tracing.neuron)}</td>
                 <td>
-                    <TracingStructureSelect options={this.props.tracingStructures}
+                    <TracingStructureSelect idName="tracingRowStructure"
+                                            options={this.props.tracingStructures}
                                             selectedOption={this.props.tracing.tracingStructure}
                                             isExclusiveEditMode={false}
                                             isDeferredEditMode={true}

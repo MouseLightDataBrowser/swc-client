@@ -1,8 +1,8 @@
 import * as React from "react";
 import {Well, Badge} from "react-bootstrap";
 
-import {displaySampleAnimal, ISample} from "../models/sample";
-import {displayInjections} from "../models/injection";
+import {displaySampleAnimal, ISample} from "../../models/sample";
+import {displayInjections} from "../../models/injection";
 
 const wellStyleDanger = {
     borderColor: "red",

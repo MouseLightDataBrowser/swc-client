@@ -1,4 +1,5 @@
 import * as React from "react";
+import {Grid, Row, Col} from "react-bootstrap";
 import {graphql} from 'react-apollo';
 import gql from "graphql-tag";
 import {GraphQLDataProps} from "react-apollo/lib/graphql";
@@ -49,11 +50,17 @@ export class Tracings extends React.Component<ICreateTracingProps, ICreateTracin
         const structures = this.props.tracingStructuresQuery && !this.props.tracingStructuresQuery.loading ? this.props.tracingStructuresQuery.tracingStructures : [];
 
         return (
-            <TracingTable tracingStructures={structures}
-                          offset={this.state.offset}
-                          limit={this.state.limit}
-                          onUpdateOffsetForPage={page => this.onUpdateOffsetForPage(page)}
-                          onUpdateLimit={limit => this.onUpdateLimit(limit)}/>
+            <Grid fluid>
+                <Row>
+                    <Col xs={12}>
+                        <TracingTable tracingStructures={structures}
+                              offset={this.state.offset}
+                              limit={this.state.limit}
+                              onUpdateOffsetForPage={page => this.onUpdateOffsetForPage(page)}
+                              onUpdateLimit={limit => this.onUpdateLimit(limit)}/>
+                    </Col>
+                </Row>
+            </Grid>
         );
     }
 }

@@ -1,8 +1,8 @@
 import * as React from "react";
 import {Well} from "react-bootstrap";
 
-import {INeuron} from "../models/neuron";
-import {formatNodeCoords} from "../models/swcNode";
+import {INeuron} from "../../models/neuron";
+import {formatNodeCoords} from "../../models/swcNode";
 
 interface INeuronProps {
     neuron: INeuron

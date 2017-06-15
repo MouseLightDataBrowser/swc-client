@@ -3,9 +3,9 @@ import {graphql} from 'react-apollo';
 import gql from "graphql-tag";
 import {GraphQLDataProps} from "react-apollo/lib/graphql";
 
-import {INeuron} from "./models/neuron";
-import {ISample} from "./models/sample";
-import {NeuronSelect} from "./NeuronSelectCell";
+import {INeuron} from "../../models/neuron";
+import {ISample} from "../../models/sample";
+import {NeuronSelect} from "./NeuronSelect";
 
 const NeuronsQuery = gql`query ($sampleId: String) {
     neurons(sampleId: $sampleId) {
@@ -60,7 +60,8 @@ export class NeuronForSampleSelect extends React.Component<INeuronForSampleSelec
         const neurons = this.props.neuronsQuery && !this.props.neuronsQuery.loading ? this.props.neuronsQuery.neurons : [];
 
         return (
-            <NeuronSelect options={neurons}
+            <NeuronSelect idName="neuronForSample"
+                          options={neurons}
                           selectedOption={this.props.selectedNeuron}
                           disabled={this.props.disabled}
                           placeholder={this.props.placeholder}
