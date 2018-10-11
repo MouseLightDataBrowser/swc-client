@@ -1,21 +1,21 @@
 const configurations: any = {
     development: {
-        port: 9653,
+        port: 5000,
         graphQLEndpoint: "/graphQL",
         graphQLHostname: "localhost",
-        graphQLPort: 9651
+        graphQLPort: 5000
     },
     test: {
-        port: 9653,
+        port: 5000,
         graphQLEndpoint: "/graphQL",
         graphQLHostname: "swc-api",
-        graphQLPort: 9651
+        graphQLPort: 5000
     },
     production: {
-        port: 9653,
+        port: 5000,
         graphQLEndpoint: "/graphQL",
         graphQLHostname: "swc-api",
-        graphQLPort: 9651
+        graphQLPort: 5000
     }
 };
 

@@ -40,7 +40,7 @@
   "dependencies": {
     "@types/react": "15.0.28",
     "apollo-client": "^1.3.0",
-    "apollo-upload-network-interface": "https://github.com/pedson/apollo-upload-network-interface.git",
+    "apollo-upload-network-interface-alt": "https://github.com/pedson/apollo-upload-network-interface.git",
     "graphql": "^0.10.1",
     "graphql-tag": "^2.2.1",
     "gulp": "3.9.1",

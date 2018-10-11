@@ -1,7 +1,7 @@
 import * as React from "react";
 import {ApolloProvider} from "react-apollo";
 import ApolloClient from "apollo-client";
-import createNetworkInterface from "apollo-upload-network-interface"
+import createNetworkInterface from "apollo-upload-network-interface-alt"
 
 import {App} from "./App";
 
