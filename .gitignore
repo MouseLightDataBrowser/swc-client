@@ -41,3 +41,7 @@ jspm_packages
 *.jsx
 
 .idea/
+
+dist
+
+public

@@ -1,38 +1,47 @@
-const path = require("path");
+import * as path from "path";
 
-import {Configuration} from "./src/configuration";
+import webpack = require("webpack");
+import * as UglifyJSPlugin from "uglifyjs-webpack-plugin";
+
+const src = path.join(__dirname, "client");
+const dist = path.join(__dirname, "dist",  "public");
 
 module.exports = {
+    context: src,
+
     entry: [
-        `webpack-dev-server/client?http://localhost:${Configuration.port}/`,
-        "./src/index"
+        "./index"
     ],
-    devServer: {
-        proxy: {
-            "/graphql": {
-                target: `http://${Configuration.graphQLHostname}:${Configuration.graphQLPort}`
-            }
-        },
-        disableHostCheck: true
-    },
+
     output: {
-        filename: 'bundle.js',
-        path: '/',
-        publicPath: '/static/'
+        filename: "bundle.js",
+        path: dist
     },
+
     module: {
         rules: [
             {
                 test: /\.tsx?$/,
-                loader: 'ts-loader',
-                exclude: /node_modules/,
+                loader: "ts-loader",
+                exclude: /node_modules/
             },
-            {test: /\.css$/, use: 'style-loader'},
-            {test: /\.css$/, use: 'css-loader'}
+            {test: /\.css$/, use: "style-loader"},
+            {test: /\.css$/, use: "css-loader"}
         ]
     },
+
     resolve: {
         extensions: [".tsx", ".ts", ".js"]
     },
-    devtool: 'inline-source-map',
+    devtool: "source-map",
+    plugins: [
+        new UglifyJSPlugin({
+            sourceMap: true
+        }),
+        new webpack.DefinePlugin({
+            'process.env': {
+                'NODE_ENV': JSON.stringify('production')
+            }
+        })
+    ]
 };

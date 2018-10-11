@@ -7,7 +7,7 @@ import {ToastContainer} from "react-toastify";
 import {Content} from "./Content";
 import {SystemMessageQuery} from "./graphql/systemMessage";
 
-const logoImage = require("file-loader!../public/mouseLight_logo_web_white.png");
+const logoImage = require("file-loader!../assets/mouseLight_logo_web_white.png");
 
 interface ISettingsDialogProps {
     show: boolean

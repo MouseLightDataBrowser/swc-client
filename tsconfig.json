@@ -9,12 +9,6 @@
     "jsx": "react",
     "skipLibCheck": true
   },
-  "include": [
-    "gulpfile.ts",
-    "webpack.config.ts",
-    "src/**/*.ts*",
-    "src/**/*.d.ts"
-  ],
   "exclude": [
     "node_modules"
   ]
