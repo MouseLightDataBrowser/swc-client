@@ -5,7 +5,7 @@ import gql from "graphql-tag";
 import {GraphQLDataProps} from "react-apollo/lib/graphql";
 
 import {TracingTable} from "./TracingTable";
-import {ITracingStructure} from "./models/tracingStructure";
+import {ITracingStructure} from "../models/tracingStructure";
 
 const TracingStructuresQuery = gql`query {
     tracingStructures {

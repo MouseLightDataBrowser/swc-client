@@ -1,15 +1,16 @@
 import * as React from "react";
-import {Glyphicon, Modal, Button, Label} from "react-bootstrap";
+import {Glyphicon, Modal, Button} from "react-bootstrap";
 import {graphql} from 'react-apollo';
 import gql from "graphql-tag";
 import {toast} from "react-toastify";
+
 const moment = require("moment");
 
-import {ISwcTracing, ISwcTracingInput, ISwcUpdateMutationOutput} from "./models/swcTracing";
-import {displayNeuron} from "./models/neuron";
-import {ITracingStructure} from "./models/tracingStructure";
-import {TracingStructureSelect} from "./components/editors/TracingStructureSelect";
-import {DynamicEditField} from "ndb-react-components";
+import {ISwcTracing, ISwcTracingInput, ISwcUpdateMutationOutput} from "../models/swcTracing";
+import {displayNeuron} from "../models/neuron";
+import {displayTracingStructure, ITracingStructure, TracingStructure} from "../models/tracingStructure";
+import {DynamicEditField} from "./editors/DynamicEditField";
+import {Dropdown, DropdownItemProps, Label} from "semantic-ui-react";
 
 const TracingsForSwcTracingMutation = gql`mutation transformedTracingsForSwc($id: String!) {
   transformedTracingsForSwc(id: $id) {
@@ -85,6 +86,9 @@ interface ITracingsRowProps {
 }
 
 interface ITracingRowState {
+    tracingStructures?: ITracingStructure[];
+    isEditingStructure?: boolean;
+    tracingStructure?: ITracingStructure;
     isInUpdate?: boolean;
     showConfirmDelete?: boolean;
     isCountingTransforms?: boolean;
@@ -118,11 +122,24 @@ export class TracingRow extends React.Component<ITracingsRowProps, ITracingRowSt
         super(props);
 
         this.state = {
-            files: [],
+            isEditingStructure: false,
+            tracingStructure: props.tracing.tracingStructure,
+            tracingStructures: props.tracingStructures,
             isInUpdate: false,
             showConfirmDelete: false,
             isCountingTransforms: false,
-            transformedCount: -1
+            transformedCount: -1,
+            files: []
+        }
+    }
+
+    public componentWillReceiveProps(props: ITracingsRowProps) {
+        if (!this.state.isEditingStructure) {
+            this.setState({tracingStructure: props.tracing.tracingStructure});
+        }
+
+        if (this.state.tracingStructures.length === 0) {
+            this.setState({tracingStructures: props.tracingStructures});
         }
     }
 
@@ -147,12 +164,19 @@ export class TracingRow extends React.Component<ITracingsRowProps, ITracingRowSt
         return true;
     }
 
+    private onTracingStructureChange(structureId: string) {
+        if (!this.state.tracingStructure || structureId !== this.state.tracingStructure.id) {
+            this.setState({tracingStructure: this.state.tracingStructures.find(t => t.id === structureId)});
+        }
+    }
+
     private async onAcceptAnnotatorEdit(value: string): Promise<boolean> {
         return this.performUpdate({id: this.props.tracing.id, annotator: value});
     }
 
-    private async onAcceptStructureChange(structure: ITracingStructure) {
-        return this.performUpdate({id: this.props.tracing.id, tracingStructureId: structure.id});
+    private async onAcceptStructureChange() {
+        this.setState({isEditingStructure:false});
+        return this.performUpdate({id: this.props.tracing.id, tracingStructureId: this.state.tracingStructure.id});
     }
 
     private async onShowDeleteConfirmation() {
@@ -226,6 +250,14 @@ export class TracingRow extends React.Component<ITracingsRowProps, ITracingRowSt
 
 
     public render() {
+        const tracingStructureOptions: DropdownItemProps[] = this.props.tracingStructures.map(t => {
+            return {
+                key: t.id,
+                text: displayTracingStructure(t),
+                value: t.id
+            }
+        });
+
         return (
             <tr>
                 <Modal show={this.state.showConfirmDelete} onHide={() => this.onCloseConfirmation()}>
@@ -250,12 +282,30 @@ export class TracingRow extends React.Component<ITracingsRowProps, ITracingRowSt
                 </td>
                 <td>{displayNeuron(this.props.tracing.neuron)}</td>
                 <td>
-                    <TracingStructureSelect idName="tracingRowStructure"
-                                            options={this.props.tracingStructures}
-                                            selectedOption={this.props.tracing.tracingStructure}
-                                            isExclusiveEditMode={false}
-                                            isDeferredEditMode={true}
-                                            onSelect={s => this.onAcceptStructureChange(s)}/>
+                    {this.state.isEditingStructure ?
+                        /*
+                        <TracingStructureSelect idName="tracingRowStructure"
+                                                options={this.props.tracingStructures}
+                                                selectedOption={this.props.tracing.tracingStructure}
+                                                isExclusiveEditMode={false}
+                                                isDeferredEditMode={true}
+                                                onSelect={s => this.onAcceptStructureChange(s)}/>*/
+                        <div>
+                            <Label style={{verticalAlign: "middle"}} icon="close" onClick={() => this.setState({isEditingStructure: false})}/>
+                                <Dropdown selection placeholder={"Select the structure..."}
+                                          options={tracingStructureOptions}
+                                          value={this.state.tracingStructure.id}
+                                          onChange={(e, {value}) => this.onTracingStructureChange(value as string)}/>
+                            <Label style={{verticalAlign: "middle"}} color="green" icon="check" onClick={() => this.onAcceptStructureChange()}/>
+                        </div> :
+                        <div>
+                            <Label size="mini"
+                                   color={this.props.tracing.tracingStructure.value === TracingStructure.axon ? "blue" : "green"}
+                                   onClick={() => this.setState({isEditingStructure: true})}>
+                                {displayTracingStructure(this.props.tracing.tracingStructure)}
+                            </Label>
+                        </div>
+                    }
                 </td>
                 <td>
                     {this.props.tracing.nodeCount}

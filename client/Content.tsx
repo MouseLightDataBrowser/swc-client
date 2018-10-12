@@ -1,6 +1,6 @@
 import * as React from "react";
 
-import {Tracings} from "./Tracings";
+import {Tracings} from "./components/Tracings";
 import {CreateContainer} from "./components/create/CreateContainer";
 
 interface IContentProps {

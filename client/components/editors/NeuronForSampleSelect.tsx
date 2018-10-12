@@ -3,9 +3,9 @@ import {graphql} from 'react-apollo';
 import gql from "graphql-tag";
 import {GraphQLDataProps} from "react-apollo/lib/graphql";
 
-import {INeuron} from "../../models/neuron";
+import {displayNeuron, INeuron} from "../../models/neuron";
 import {ISample} from "../../models/sample";
-import {NeuronSelect} from "./NeuronSelect";
+import {Dropdown, DropdownItemProps} from "semantic-ui-react";
 
 const NeuronsQuery = gql`query ($sampleId: String) {
     neurons(sampleId: $sampleId) {
@@ -47,6 +47,7 @@ interface INeuronForSampleSelectCellProps {
 }
 
 interface INeuronForSampleSelectCellState {
+    neurons: INeuron[];
 }
 
 @graphql(NeuronsQuery, {
@@ -55,17 +56,38 @@ interface INeuronForSampleSelectCellState {
     skip: (ownProps) => ownProps.sample === null
 })
 export class NeuronForSampleSelect extends React.Component<INeuronForSampleSelectCellProps, INeuronForSampleSelectCellState> {
-    public render() {
+    public constructor(props: INeuronForSampleSelectCellProps) {
+        super(props);
 
-        const neurons = this.props.neuronsQuery && !this.props.neuronsQuery.loading ? this.props.neuronsQuery.neurons : [];
+        this.state = {
+            neurons: props.neuronsQuery && !props.neuronsQuery.loading ? props.neuronsQuery.neurons : []
+        }
+    }
+
+    private onNeuronChange(neuronId: string) {
+        if (!this.props.selectedNeuron || neuronId !== this.props.selectedNeuron.id) {
+            this.props.onNeuronChange(this.state.neurons.find((s) => s.id === neuronId));
+        }
+    }
+
+    public componentWillReceiveProps(props: INeuronForSampleSelectCellProps) {
+        this.setState({neurons: props.neuronsQuery && !props.neuronsQuery.loading ? props.neuronsQuery.neurons : []});
+    }
+
+    public render() {
+        const neuronOptions: DropdownItemProps[] = this.state.neurons.map(n => {
+            return {
+                key: n.id,
+                text: displayNeuron(n),
+                value: n.id
+            }
+        });
 
         return (
-            <NeuronSelect idName="neuronForSample"
-                          options={neurons}
-                          selectedOption={this.props.selectedNeuron}
-                          disabled={this.props.disabled}
-                          placeholder={this.props.placeholder}
-                          onSelect={this.props.onNeuronChange}/>
+            <Dropdown placeholder={this.props.sample ? "Select a neuron..." : "Select a sample to select a neuron..."} fluid selection options={neuronOptions}
+                      value={this.props.selectedNeuron ? this.props.selectedNeuron.id : null}
+                      disabled={this.props.disabled}
+                      onChange={(e, {value}) => this.onNeuronChange(value as string)}/>
         );
     }
 }

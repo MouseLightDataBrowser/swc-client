@@ -3372,11 +3372,6 @@ natives@^1.1.0:
   resolved "https://registry.yarnpkg.com/natives/-/natives-1.1.0.tgz#e9ff841418a6b2ec7a495e939984f78f163e6e31"
   integrity sha1-6f+EFBimsux6SV6TmYT3jxY+bjE=
 
-ndb-react-components@^0.1.17:
-  version "0.1.17"
-  resolved "https://registry.yarnpkg.com/ndb-react-components/-/ndb-react-components-0.1.17.tgz#f132f28212187209b29c60ab34779f890b2a39bb"
-  integrity sha1-8TLyghIYcgmynGCrNHefiQsqObs=
-
 negotiator@0.6.1:
   version "0.6.1"
   resolved "https://registry.yarnpkg.com/negotiator/-/negotiator-0.6.1.tgz#2b327184e8992101177b28563fb5e7102acd0ca9"

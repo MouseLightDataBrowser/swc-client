@@ -3,10 +3,10 @@ import {Panel, Table} from "react-bootstrap";
 import {graphql, InjectedGraphQLProps} from 'react-apollo';
 import gql from "graphql-tag";
 
-import {ISwcTracingPage} from "./models/swcTracing";
-import {ITracingStructure} from "./models/tracingStructure";
+import {ISwcTracingPage} from "../models/swcTracing";
+import {ITracingStructure} from "../models/tracingStructure";
 import {TracingRow} from "./TracingRow";
-import {PaginationHeader} from "ndb-react-components";
+import {PaginationHeader} from "./PaginationHeader";
 
 const tracingsQuery = gql`query ($pageInput: SwcTracingPageInput) {
   tracings(pageInput: $pageInput) {

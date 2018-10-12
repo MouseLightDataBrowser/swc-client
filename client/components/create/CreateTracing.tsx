@@ -20,16 +20,15 @@ import {
     Label
 } from "react-bootstrap";
 
-import {ISample} from "../../models/sample";
+import {displaySample, ISample} from "../../models/sample";
 import {INeuron} from "../../models/neuron";
 import {IInjection} from "../../models/injection";
-import {TracingStructureSelect} from "../editors/TracingStructureSelect";
-import {ITracingStructure} from "../../models/tracingStructure";
-import {SampleSelect} from "../editors/SampleSelect";
+import {displayTracingStructure, ITracingStructure} from "../../models/tracingStructure";
 import {NeuronForSampleSelect} from "../editors/NeuronForSampleSelect";
 import {ISwcUploadMutationOutput, ISwcUploadOutput} from "../../models/swcTracing";
 import {SamplePreview} from "./SamplePreview";
 import {NeuronPreview} from "./NeuronPreview";
+import {Dropdown, DropdownItemProps} from "semantic-ui-react";
 
 interface ITracingStructuresQueryProps {
     tracingStructures: ITracingStructure[];
@@ -48,6 +47,9 @@ interface ICreateTracingProps {
 }
 
 interface ICreateTracingState {
+    samples?: ISample[];
+    tracingStructures?: ITracingStructure[];
+
     files?: File[];
     annotator?: string;
     structure?: ITracingStructure;
@@ -136,6 +138,8 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
         super(props);
 
         this.state = {
+            samples: props.samplesQuery && !props.samplesQuery.loading ? props.samplesQuery.samples : [],
+            tracingStructures: props.tracingStructuresQuery && !props.tracingStructuresQuery.loading ? props.tracingStructuresQuery.tracingStructures : [],
             files: [],
             annotator: "",
             sample: null,
@@ -146,28 +150,33 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
         }
     }
 
-    private onSampleChange(sample: ISample) {
-        if (sample !== this.state.sample) {
-            this.setState({sample, neuron: null, structure: null}, null);
+    private onSampleChange(sampleId: string) {
+        if (!this.state.sample || sampleId !== this.state.sample.id) {
+            this.setState({
+                sample: this.state.samples.find((s) => s.id === sampleId),
+                neuron: null,
+                structure: null});
         }
     }
 
     private onNeuronChange(neuron: INeuron) {
         if (neuron !== this.state.neuron) {
-            this.setState({neuron, structure: null}, null);
+            this.setState({neuron, structure: null});
         }
     }
 
-    private onTracingStructureChange(structure: ITracingStructure) {
-        this.setState({structure}, null);
+    private onTracingStructureChange(structureId: string) {
+        if (!this.state.structure || structureId !== this.state.structure.id) {
+            this.setState({structure: this.state.tracingStructures.find(t => t.id === structureId)});
+        }
     }
 
     private onAnnotatorChange(annotator: string) {
-        this.setState({annotator}, null);
+        this.setState({annotator});
     }
 
     private onLockSample() {
-        this.setState({isSampleLocked: !this.state.isSampleLocked}, null);
+        this.setState({isSampleLocked: !this.state.isSampleLocked});
 
         if (typeof(Storage) !== "undefined") {
             if (!this.state.isSampleLocked) {
@@ -183,7 +192,7 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
     }
 
     private onDrop(acceptedFiles: any) {
-        this.setState({files: acceptedFiles}, null);
+        this.setState({files: acceptedFiles});
     }
 
     private resetUploadState() {
@@ -199,7 +208,7 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
                 state.sample = null;
             }
         }
-        this.setState(state, null);
+        this.setState(state);
     }
 
     private async onUploadSwc() {
@@ -224,6 +233,12 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
     }
 
     public componentWillReceiveProps(props: ICreateTracingProps) {
+        this.setState({samples: props.samplesQuery && !props.samplesQuery.loading ? props.samplesQuery.samples : []});
+
+        if (this.state.tracingStructures.length === 0) {
+            this.setState({tracingStructures: props.tracingStructuresQuery && !props.tracingStructuresQuery.loading ? props.tracingStructuresQuery.tracingStructures : []});
+        }
+
         if (typeof(Storage) !== "undefined") {
             const lockedSampleId = localStorage.getItem("tracing.create.locked.sample");
 
@@ -238,14 +253,14 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
     }
 
     public render() {
-        const tracingStructures = this.props.tracingStructuresQuery && !this.props.tracingStructuresQuery.loading ? this.props.tracingStructuresQuery.tracingStructures : [];
-        const samples = this.props.samplesQuery && !this.props.samplesQuery.loading ? this.props.samplesQuery.samples : [];
+        // const tracingStructures = this.props.tracingStructuresQuery && !this.props.tracingStructuresQuery.loading ? this.props.tracingStructuresQuery.tracingStructures : [];
+        // const samples = this.props.samplesQuery && !this.props.samplesQuery.loading ? this.props.samplesQuery.samples : [];
 
         return (
             <Panel collapsible defaultExpanded header="Create" bsStyle="default">
                 <Grid fluid>
                     {this.renderUploadRow()}
-                    {this.renderPropertiesRow(samples, tracingStructures)}
+                    {this.renderPropertiesRow(this.state.samples, this.state.tracingStructures)}
                     {this.renderSelectedSpecificsRow()}
                 </Grid>
             </Panel>
@@ -268,10 +283,11 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
                                              placeholder="Click to select..."/>
                             </Dropzone>
                             <InputGroup.Button>
-                                <Button bsStyle={!this.canUploadTracing() || this.state.isInUpload ? "default" : "success"}
-                                        disabled={!this.canUploadTracing() || this.state.isInUpload}
-                                        active={this.state.isSampleLocked}
-                                        onClick={() => this.onUploadSwc()}>
+                                <Button
+                                    bsStyle={!this.canUploadTracing() || this.state.isInUpload ? "default" : "success"}
+                                    disabled={!this.canUploadTracing() || this.state.isInUpload}
+                                    active={this.state.isSampleLocked}
+                                    onClick={() => this.onUploadSwc()}>
                                     Upload&nbsp;&nbsp;
                                     <Glyphicon glyph="cloud-upload"/>
                                 </Button>
@@ -284,19 +300,32 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
     }
 
     private renderPropertiesRow(samples: ISample[], tracingStructures: ITracingStructure[]) {
+        const sampleOptions: DropdownItemProps[] = samples.map(s => {
+            return {
+                key: s.id,
+                text: displaySample(s),
+                value: s.id
+            }
+        });
+
+        const tracingStructureOptions: DropdownItemProps[] = tracingStructures.map(t => {
+            return {
+                key: t.id,
+                text: displayTracingStructure(t),
+                value: t.id
+            }
+        });
+
         return (
             <Row>
                 <Col md={3}>
                     <FormGroup>
                         <ControlLabel>Sample</ControlLabel>
                         <InputGroup bsSize="sm">
-                            <SampleSelect idName="createTracingSampleSelect" options={samples}
-                                          selectedOption={this.state.sample}
-                                          disabled={this.state.isSampleLocked || this.state.isInUpload}
-                                          placeholder="Select sample..."
-                                          hasLeftInputGroup={true}
-                                          hasRightInputGroup={true}
-                                          onSelect={s => this.onSampleChange(s)}/>
+                            <Dropdown placeholder={"Select a sample..."} fluid selection options={sampleOptions}
+                                      value={this.state.sample ? this.state.sample.id : null}
+                                      disabled={this.state.isSampleLocked || this.state.isInUpload}
+                                      onChange={(e, {value}) => this.onSampleChange(value as string)}/>
                             <InputGroup.Button>
                                 <Button bsStyle={this.state.isSampleLocked ? "danger" : "default"} bsSize="sm"
                                         disabled={this.state.sample === null || this.state.isInUpload}
@@ -318,12 +347,18 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
                 </Col>
                 <Col md={2}>
                     <ControlLabel>Structure</ControlLabel>
+                    <Dropdown placeholder={"Select the structure..."} fluid selection options={tracingStructureOptions}
+                              value={this.state.structure ? this.state.structure.id : null}
+                              disabled={this.state.isInUpload}
+                              onChange={(e, {value}) => this.onTracingStructureChange(value as string)}/>
+                    {/*
                     <TracingStructureSelect idName="createTracingStructureSelect"
                                             options={tracingStructures}
                                             selectedOption={this.state.structure}
                                             disabled={this.state.isInUpload}
                                             placeholder="Select structure..."
                                             onSelect={t => this.onTracingStructureChange(t)}/>
+                                            */}
                 </Col>
                 <Col md={3}>
                     <FormGroup controlId="annotatorText"
