@@ -2,25 +2,20 @@ import * as React from "react";
 import {Grid, Row, Col} from "react-bootstrap";
 
 import {CreateTracing} from "./CreateTracing";
+import {ITracingStructure} from "../../models/tracingStructure";
 
 interface ICreateContainerProps {
+    tracingStructures: ITracingStructure[];
     shouldClearCreateContentsAfterUpload: boolean;
 }
 
-interface ICreateContainerState {
-}
-
-export class CreateContainer extends React.Component<ICreateContainerProps, ICreateContainerState> {
-    public render() {
-        return (
-            <Grid fluid>
-                <Row>
-                    <Col xs={12}>
-                        <CreateTracing
-                            shouldClearCreateContentsAfterUpload={this.props.shouldClearCreateContentsAfterUpload}/>
-                    </Col>
-                </Row>
-            </Grid>
-        );
-    }
-}
+export const CreateContainer = (props: ICreateContainerProps) => (
+    <Grid fluid>
+        <Row>
+            <Col xs={12}>
+                <CreateTracing tracingStructures={props.tracingStructures}
+                               shouldClearCreateContentsAfterUpload={props.shouldClearCreateContentsAfterUpload}/>
+            </Col>
+        </Row>
+    </Grid>
+);

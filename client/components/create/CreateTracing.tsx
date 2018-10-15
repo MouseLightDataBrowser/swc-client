@@ -1,10 +1,8 @@
 import * as React from "react";
-import {graphql} from 'react-apollo';
-import gql from "graphql-tag";
-import {GraphQLDataProps} from "react-apollo/lib/graphql";
+import {ApolloError} from "apollo-client";
+import {Dropdown, DropdownItemProps, Loader} from "semantic-ui-react";
 import Dropzone = require("react-dropzone");
 import {toast} from "react-toastify";
-import * as ReactSpinner from "react-spinjs";
 
 import {
     Grid,
@@ -24,33 +22,19 @@ import {displaySample, ISample} from "../../models/sample";
 import {INeuron} from "../../models/neuron";
 import {IInjection} from "../../models/injection";
 import {displayTracingStructure, ITracingStructure} from "../../models/tracingStructure";
+import {ISwcUploadOutput} from "../../models/swcTracing";
+import {ISamplesQueryChildProps, SamplesQuery} from "../../graphql/samples";
+import {NEURONS_QUERY, NeuronsForSampleQuery} from "../../graphql/neurons";
+import {UPLOAD_TRACING_MUTATION, UploadTracingMutation, UploadTracingMutationResponse} from "../../graphql/tracings";
 import {NeuronForSampleSelect} from "../editors/NeuronForSampleSelect";
-import {ISwcUploadMutationOutput, ISwcUploadOutput} from "../../models/swcTracing";
 import {SamplePreview} from "./SamplePreview";
 import {NeuronPreview} from "./NeuronPreview";
-import {Dropdown, DropdownItemProps} from "semantic-ui-react";
-
-interface ITracingStructuresQueryProps {
-    tracingStructures: ITracingStructure[];
-}
-
-interface ISamplesQueryProps {
-    samples: ISample[];
-}
-
-interface ICreateTracingProps {
-    shouldClearCreateContentsAfterUpload: boolean;
-    tracingStructuresQuery?: ITracingStructuresQueryProps & GraphQLDataProps;
-    samplesQuery?: ISamplesQueryProps & GraphQLDataProps;
-
-    uploadSwc?(annotator: string, neuronId: string, structureId: string, files: any): Promise<any>;
-}
 
 interface ICreateTracingState {
     samples?: ISample[];
     tracingStructures?: ITracingStructure[];
 
-    files?: File[];
+    file?: File;
     annotator?: string;
     structure?: ITracingStructure;
     neuron?: INeuron;
@@ -61,86 +45,14 @@ interface ICreateTracingState {
     isInUpload?: boolean;
 }
 
-const TracingStructuresQuery = gql`query {
-    tracingStructures {
-        id
-        name
-        value
-    }
-}`;
-
-const SamplesQuery = gql`query {
-    samples {
-        id
-        idNumber
-        animalId
-        tag
-        comment
-        sampleDate
-        createdAt
-        updatedAt
-        injections {
-          id
-          brainArea {
-            id
-            name
-          }
-        }
-        mouseStrain {
-            name
-        }
-    } 
-}`;
-
-const UploadSwcQuery = gql`
-  mutation uploadSwc($annotator: String, $neuronId: String, $structureId: String, $files: [UploadedFile]) {
-  uploadSwc(annotator: $annotator, neuronId: $neuronId, structureId: $structureId, files: $files) {
-    tracing {
-      id
-      annotator
-      nodeCount
-      filename
-      tracingStructure {
-        id
-        name
-        value
-      }
-      neuron {
-        id
-        idNumber
-        idString
-      }
-    }
-    transformSubmission
-    error {
-      name
-      message
-    }
-  }
-}`;
-
-@graphql(TracingStructuresQuery, {
-    name: "tracingStructuresQuery"
-})
-@graphql(SamplesQuery, {
-    name: "samplesQuery",
-    options: {pollInterval: 5000}
-})
-@graphql(UploadSwcQuery, {
-    props: ({ownProps, mutate}) => ({
-        uploadSwc: (annotator: string, neuronId: string, structureId: string, files: any) => mutate({
-            variables: {annotator, neuronId, structureId, files},
-        }),
-    }),
-})
-export class CreateTracing extends React.Component<ICreateTracingProps, ICreateTracingState> {
+class CreateTracingComponent extends React.Component<ISamplesQueryChildProps, ICreateTracingState> {
     public constructor(props: any) {
         super(props);
 
         this.state = {
-            samples: props.samplesQuery && !props.samplesQuery.loading ? props.samplesQuery.samples : [],
-            tracingStructures: props.tracingStructuresQuery && !props.tracingStructuresQuery.loading ? props.tracingStructuresQuery.tracingStructures : [],
-            files: [],
+            samples: props.samples,
+            tracingStructures: props.tracingStructures,
+            file: null,
             annotator: "",
             sample: null,
             neuron: null,
@@ -153,9 +65,10 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
     private onSampleChange(sampleId: string) {
         if (!this.state.sample || sampleId !== this.state.sample.id) {
             this.setState({
-                sample: this.state.samples.find((s) => s.id === sampleId),
+                sample: this.state.samples.find((s) => s.id === sampleId) || null,
                 neuron: null,
-                structure: null});
+                structure: null
+            });
         }
     }
 
@@ -188,74 +101,87 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
     }
 
     private canUploadTracing(): boolean {
-        return this.state.neuron && this.state.structure && this.state.annotator.length > 0 && this.state.files.length === 1;
+        return this.state.neuron && this.state.structure && this.state.annotator.length > 0 && this.state.file !== null;
     }
 
-    private onDrop(acceptedFiles: any) {
-        this.setState({files: acceptedFiles});
+    private onDrop(acceptedFiles: File[]) {
+        if (acceptedFiles && acceptedFiles.length > 0) {
+            this.setState({file: acceptedFiles[0]});
+        } else {
+            this.setState({file: null});
+        }
     }
 
     private resetUploadState() {
-        let state: ICreateTracingState = Object.assign({}, this.state);
 
-        state.files = [];
+        this.setState({file: null});
 
         if (this.props.shouldClearCreateContentsAfterUpload) {
-            state.annotator = "";
-            state.structure = null;
-            state.neuron = null;
+            this.setState({
+                annotator: "",
+                structure: null,
+                neuron: null,
+            });
+
             if (!this.state.isSampleLocked) {
-                state.sample = null;
+                this.setState({sample: null});
             }
         }
-        this.setState(state);
     }
 
-    private async onUploadSwc() {
+    private async onUploadSwc(uploadSwc: any) {
         if (this.canUploadTracing()) {
             this.setState({isInUpload: true});
 
             try {
-                const result: ISwcUploadMutationOutput = await this.props.uploadSwc(this.state.annotator, this.state.neuron.id, this.state.structure.id, this.state.files);
-
-                if (!result.data.uploadSwc.tracing) {
-                    toast.error(uploadErrorContent(result.data.uploadSwc.error), {autoClose: false});
-                } else {
-                    this.resetUploadState();
-                    toast.success(uploadSuccessContent(result.data.uploadSwc), {});
-                }
+                uploadSwc({
+                    variables: {
+                        annotator: this.state.annotator,
+                        neuronId: this.state.neuron.id,
+                        structureId: this.state.structure.id,
+                        file: this.state.file
+                    }
+                });
                 this.setState({isInUpload: false});
             } catch (error) {
-                toast.error(uploadErrorContent(error), {autoClose: false});
+                toast.error(uploadErrorContent(error), {autoClose: false, });
                 this.setState({isInUpload: false});
             }
         }
     }
 
-    public componentWillReceiveProps(props: ICreateTracingProps) {
-        this.setState({samples: props.samplesQuery && !props.samplesQuery.loading ? props.samplesQuery.samples : []});
+    private async onUploadComplete(data: UploadTracingMutationResponse) {
+        this.resetUploadState();
+        toast.success(uploadSuccessContent(data.uploadSwc), {});
+        this.setState({isInUpload: false});
+    }
+
+    private async onUploadError(error: ApolloError) {
+        toast.error(uploadErrorContent(error), {autoClose: false});
+        this.setState({isInUpload: false});
+    }
+
+    public componentWillReceiveProps(props: ISamplesQueryChildProps) {
+        this.setState({samples: props.samples});
 
         if (this.state.tracingStructures.length === 0) {
-            this.setState({tracingStructures: props.tracingStructuresQuery && !props.tracingStructuresQuery.loading ? props.tracingStructuresQuery.tracingStructures : []});
+            this.setState({tracingStructures: props.tracingStructures});
         }
 
         if (typeof(Storage) !== "undefined") {
             const lockedSampleId = localStorage.getItem("tracing.create.locked.sample");
 
-            if (lockedSampleId && props.samplesQuery && props.samplesQuery.samples) {
-                let samples = props.samplesQuery.samples.filter(s => s.id === lockedSampleId);
+            if (lockedSampleId) {
+                let sample = props.samples.find((s: ISample) => s.id === lockedSampleId);
 
-                if (samples.length > 0 && this.state.sample !== samples[0]) {
-                    this.setState({sample: samples[0], isSampleLocked: true}, null);
+                if (sample && this.state.sample !== sample) {
+                    this.setState({sample: sample, isSampleLocked: true}, null);
                 }
             }
         }
     }
 
     public render() {
-        // const tracingStructures = this.props.tracingStructuresQuery && !this.props.tracingStructuresQuery.loading ? this.props.tracingStructuresQuery.tracingStructures : [];
-        // const samples = this.props.samplesQuery && !this.props.samplesQuery.loading ? this.props.samplesQuery.samples : [];
-
         return (
             <Panel collapsible defaultExpanded header="Create" bsStyle="default">
                 <Grid fluid>
@@ -271,7 +197,7 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
         return (
             <Row>
                 <Col md={12}>
-                    {this.state.isInUpload ? <ReactSpinner/> : null}
+                    {this.state.isInUpload ? <Loader/> : null}
                     <FormGroup>
                         <ControlLabel>Swc Tracing</ControlLabel>
                         <InputGroup bsSize="sm">
@@ -279,18 +205,28 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
                                       onDrop={(accepted: any) => this.onDrop(accepted)}>
                                 <FormControl type="test"
                                              bsSize="sm"
-                                             value={this.state.files.length > 0 ? this.state.files[0].name : ""}
+                                             value={this.state.file ? this.state.file.name : ""}
+                                             onChange={() => {
+                                             }}
                                              placeholder="Click to select..."/>
                             </Dropzone>
                             <InputGroup.Button>
-                                <Button
-                                    bsStyle={!this.canUploadTracing() || this.state.isInUpload ? "default" : "success"}
-                                    disabled={!this.canUploadTracing() || this.state.isInUpload}
-                                    active={this.state.isSampleLocked}
-                                    onClick={() => this.onUploadSwc()}>
-                                    Upload&nbsp;&nbsp;
-                                    <Glyphicon glyph="cloud-upload"/>
-                                </Button>
+                                <UploadTracingMutation mutation={UPLOAD_TRACING_MUTATION}
+                                                       onCompleted={(data) => this.onUploadComplete(data)}
+                                                       onError={(error) => this.onUploadError(error)}>
+                                    {(uploadSwc) => {
+                                        return (
+                                            <Button
+                                                bsStyle={!this.canUploadTracing() || this.state.isInUpload ? "default" : "success"}
+                                                disabled={!this.canUploadTracing() || this.state.isInUpload}
+                                                active={this.state.isSampleLocked}
+                                                onClick={() => this.onUploadSwc(uploadSwc)}>
+                                                Upload&nbsp;&nbsp;
+                                                <Glyphicon glyph="cloud-upload"/>
+                                            </Button>
+                                        );
+                                    }}
+                                </UploadTracingMutation>
                             </InputGroup.Button>
                         </InputGroup>
                     </FormGroup>
@@ -328,7 +264,7 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
                                       onChange={(e, {value}) => this.onSampleChange(value as string)}/>
                             <InputGroup.Button>
                                 <Button bsStyle={this.state.isSampleLocked ? "danger" : "default"} bsSize="sm"
-                                        disabled={this.state.sample === null || this.state.isInUpload}
+                                        disabled={this.state.sample === null || this.state.isInUpload || this.state.samples.length == 0}
                                         active={this.state.isSampleLocked}
                                         onClick={() => this.onLockSample()}>
                                     <Glyphicon glyph="lock"/>
@@ -339,11 +275,18 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
                 </Col>
                 <Col md={4}>
                     <ControlLabel>Neuron</ControlLabel>
-                    <NeuronForSampleSelect sample={this.state.sample}
-                                           selectedNeuron={this.state.neuron}
-                                           onNeuronChange={n => this.onNeuronChange(n)}
-                                           disabled={this.state.sample === null || this.state.isInUpload}
-                                           placeholder={this.state.sample ? "Select a neuron..." : "Select a sample to select a neuron..."}/>
+                    <NeuronsForSampleQuery query={NEURONS_QUERY}
+                                           variables={{sampleId: this.state.sample ? this.state.sample.id : null}}>
+                        {({data}) => {
+                            const neurons = data.neurons || [];
+
+                            return (
+                                <NeuronForSampleSelect neurons={neurons} selectedNeuron={this.state.neuron}
+                                                       onNeuronChange={n => this.onNeuronChange(n)}
+                                                       disabled={this.state.sample === null || this.state.isInUpload}/>
+                            );
+                        }}
+                    </NeuronsForSampleQuery>
                 </Col>
                 <Col md={2}>
                     <ControlLabel>Structure</ControlLabel>
@@ -351,14 +294,6 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
                               value={this.state.structure ? this.state.structure.id : null}
                               disabled={this.state.isInUpload}
                               onChange={(e, {value}) => this.onTracingStructureChange(value as string)}/>
-                    {/*
-                    <TracingStructureSelect idName="createTracingStructureSelect"
-                                            options={tracingStructures}
-                                            selectedOption={this.state.structure}
-                                            disabled={this.state.isInUpload}
-                                            placeholder="Select structure..."
-                                            onSelect={t => this.onTracingStructureChange(t)}/>
-                                            */}
                 </Col>
                 <Col md={3}>
                     <FormGroup controlId="annotatorText"
@@ -413,3 +348,5 @@ const uploadSuccessContent = (output: ISwcUploadOutput) => {
 const uploadErrorContent = (error: Error) => {
     return (<div><h3>Upload failed</h3>{error ? error.message : "(no additional details available)"}</div>);
 };
+
+export const CreateTracing = SamplesQuery(CreateTracingComponent);

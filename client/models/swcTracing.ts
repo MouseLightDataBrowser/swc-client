@@ -16,13 +16,6 @@ export interface ISwcTracing {
     updatedAt: number;
 }
 
-export interface ISwcTracingPage {
-    offset: number;
-    limit: number;
-    totalCount: number;
-    tracings: ISwcTracing[];
-}
-
 export interface ISwcTracingInput {
     id: string;
     annotator?: string;
