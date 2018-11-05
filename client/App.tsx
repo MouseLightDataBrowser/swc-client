@@ -3,9 +3,8 @@ import {Navbar, Nav, Glyphicon, NavItem, Badge, Modal, Button, Checkbox} from "r
 import {ToastContainer, ToastPosition} from "react-toastify";
 
 import {Content} from "./Content";
-import {SystemMessageQuery} from "./graphql/systemMessage";
-import {Query} from "react-apollo";
-import {TracingStructuresQuery} from "./graphql/tracingStructures";
+import {SYSTEM_MESSAGE_QUERY, SystemMessageQuery} from "./graphql/systemMessage";
+import {TRACING_STRUCTURES_QUERY, TracingStructuresQuery} from "./graphql/tracingStructures";
 import {ITracingStructure} from "./models/tracingStructure";
 import {Accordion, Icon, Message} from "semantic-ui-react";
 
@@ -55,7 +54,7 @@ const Heading = (props: IHeadingProps) => (
                     <Glyphicon glyph="cog"/>
                 </NavItem>
             </Nav>
-            <Query query={SystemMessageQuery} pollInterval={5000}>
+            <SystemMessageQuery query={SYSTEM_MESSAGE_QUERY} pollInterval={5000}>
                 {({loading, error, data}) => {
                     if (loading || error) {
                         return null;
@@ -65,7 +64,7 @@ const Heading = (props: IHeadingProps) => (
                         <Navbar.Text pullRight><Badge>{data.systemMessage}</Badge></Navbar.Text>
                     );
                 }}
-            </Query>
+            </SystemMessageQuery>
         </Navbar.Collapse>
     </Navbar>
 );
@@ -94,7 +93,7 @@ export class App extends React.Component<{}, IAppState> {
         let shouldClearCreateContentsAfterUpload = true;
 
         if (typeof(Storage) !== "undefined") {
-            shouldClearCreateContentsAfterUpload = localStorage.getItem("shouldClearCreateContentsAfterUpload") == "true";
+            shouldClearCreateContentsAfterUpload = localStorage.getItem("shouldClearCreateContentsAfterUpload") === "true";
         }
 
         this.state = {
@@ -131,7 +130,7 @@ export class App extends React.Component<{}, IAppState> {
                                 onChangeClearContents={(b: boolean) => this.onChangeClearContents(b)}/>
                 <Heading onSettingsClick={() => this.onSettingsClick()}/>
                 <div style={{paddingTop: "50px", marginBottom: "40px"}}>
-                    <Query query={TracingStructuresQuery} pollInterval={30000}>
+                    <TracingStructuresQuery query={TRACING_STRUCTURES_QUERY} pollInterval={30000}>
                         {({loading, error, data}) => {
                             if (error) {
                                 return (
@@ -164,7 +163,7 @@ export class App extends React.Component<{}, IAppState> {
                                          shouldClearCreateContentsAfterUpload={this.state.shouldClearCreateContentsAfterUpload}/>
                             );
                         }}
-                    </Query>
+                    </TracingStructuresQuery>
                 </div>
                 <Footer/>
             </div>

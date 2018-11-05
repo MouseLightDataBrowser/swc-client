@@ -7,23 +7,23 @@ module.exports = {
         "./client/index"
     ],
     output: {
-        filename: 'bundle.js',
+        filename: "bundle.js",
         path: dist,
-        publicPath: '/'
+        publicPath: "/"
     },
     module: {
         rules: [
             {
                 test: /\.tsx?$/,
-                loader: 'ts-loader',
+                loader: "ts-loader",
                 exclude: /node_modules/
             },
-            {test: /\.css$/, use: 'style-loader'},
-            {test: /\.css$/, use: 'css-loader'}
+            {test: /\.css$/, use: "style-loader"},
+            {test: /\.css$/, use: "css-loader"}
         ]
     },
     resolve: {
         extensions: [".tsx", ".ts", ".js"]
     },
-    devtool: 'inline-source-map'
+    devtool: "inline-source-map"
 };

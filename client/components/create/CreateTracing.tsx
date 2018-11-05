@@ -264,7 +264,7 @@ class CreateTracingComponent extends React.Component<ISamplesQueryChildProps, IC
                                       onChange={(e, {value}) => this.onSampleChange(value as string)}/>
                             <InputGroup.Button>
                                 <Button bsStyle={this.state.isSampleLocked ? "danger" : "default"} bsSize="sm"
-                                        disabled={this.state.sample === null || this.state.isInUpload || this.state.samples.length == 0}
+                                        disabled={this.state.sample === null || this.state.isInUpload || this.state.samples.length === 0}
                                         active={this.state.isSampleLocked}
                                         onClick={() => this.onLockSample()}>
                                     <Glyphicon glyph="lock"/>

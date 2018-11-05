@@ -35,4 +35,6 @@ type NeuronsForSampleQueryResponse = {
     neurons: INeuron[];
 }
 
-export class NeuronsForSampleQuery extends Query<NeuronsForSampleQueryResponse, NeuronsForSampleQueryVariables>{}
+export class NeuronsForSampleQuery extends Query<NeuronsForSampleQueryResponse, NeuronsForSampleQueryVariables> {
+}
+

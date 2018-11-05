@@ -23,7 +23,7 @@ const SAMPLES_QUERY = gql`query {
         mouseStrain {
             name
         }
-    } 
+    }
 }`;
 
 type SamplesQueryInputProps = {

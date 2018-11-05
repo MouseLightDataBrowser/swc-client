@@ -45,7 +45,7 @@ export class PaginationHeader extends React.Component<IPaginationHeaderProps, IP
     }
 
     public componentWillReceiveProps(nextProps: IPaginationHeaderProps) {
-        if (nextProps.activePage != this.props.activePage) {
+        if (nextProps.activePage !== this.props.activePage) {
             this.setState({jumpPage: nextProps.activePage});
         }
         this.setState({limit: nextProps.limit});

@@ -1,7 +1,7 @@
 import * as React from "react";
 
 import {Glyphicon, FormControl, FormGroup, InputGroup, Overlay, Tooltip, Button, HelpBlock} from "react-bootstrap";
-import {isNullOrUndefined} from "util";
+import {isNullOrUndefined} from "../../util/nodeUtil";
 
 export enum DynamicEditFieldMode {
     Static,
@@ -103,7 +103,7 @@ export class DynamicEditField extends React.Component<IDynamicEditFieldProps, ID
     };
 
     private async onKeyPress(event: any) {
-        if ((event.charCode || event.which) == 13) {
+        if ((event.charCode || event.which) === 13) {
             await this.onAcceptEdit();
         }
     };
@@ -146,8 +146,7 @@ export class DynamicEditField extends React.Component<IDynamicEditFieldProps, ID
             rootClose: true,
             target: this.overlayControl,
             show: this.state.showEditFail,
-            onHide: () => this.setState({showEditFail: false}, null),
-            onEntered: () => setTimeout(() => this.setState({showEditFail: false}, null), 4000)
+            onHide: () => this.setState({showEditFail: false}, null)
         };
 
         if (this.state.mode === DynamicEditFieldMode.Edit) {
