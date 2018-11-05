@@ -1,22 +1,19 @@
 import * as React from "react";
 import {ApolloError} from "apollo-client";
-import {Dropdown, DropdownItemProps, Loader} from "semantic-ui-react";
+import {
+    Button, Container,
+    Dropdown,
+    DropdownItemProps,
+    Form,
+    Grid,
+    Header, Icon,
+    Input,
+    Label,
+    Loader,
+    Segment
+} from "semantic-ui-react";
 import Dropzone = require("react-dropzone");
 import {toast} from "react-toastify";
-
-import {
-    Grid,
-    Row,
-    Col,
-    Panel,
-    Button,
-    FormGroup,
-    ControlLabel,
-    FormControl,
-    InputGroup,
-    Glyphicon,
-    Label
-} from "react-bootstrap";
 
 import {displaySample, ISample} from "../../models/sample";
 import {INeuron} from "../../models/neuron";
@@ -144,7 +141,7 @@ class CreateTracingComponent extends React.Component<ISamplesQueryChildProps, IC
                 });
                 this.setState({isInUpload: false});
             } catch (error) {
-                toast.error(uploadErrorContent(error), {autoClose: false, });
+                toast.error(uploadErrorContent(error), {autoClose: false,});
                 this.setState({isInUpload: false});
             }
         }
@@ -183,58 +180,65 @@ class CreateTracingComponent extends React.Component<ISamplesQueryChildProps, IC
 
     public render() {
         return (
-            <Panel collapsible defaultExpanded header="Create" bsStyle="default">
-                <Grid fluid>
-                    {this.renderUploadRow()}
-                    {this.renderPropertiesRow(this.state.samples, this.state.tracingStructures)}
-                    {this.renderSelectedSpecificsRow()}
-                </Grid>
-            </Panel>
+            <div>
+                <Segment secondary attached="top">
+                    <Header content="Create" style={{display: "inline-block"}}/>
+                    <UploadTracingMutation mutation={UPLOAD_TRACING_MUTATION}
+                                           onCompleted={(data) => this.onUploadComplete(data)}
+                                           onError={(error) => this.onUploadError(error)}>
+                        {(uploadSwc) => {
+                            return (
+                                <Button content="Upload" icon="upload" size="tiny" labelPosition="right" color="blue"
+                                        floated="right" disabled={!this.canUploadTracing() || this.state.isInUpload}
+                                        onClick={() => this.onUploadSwc(uploadSwc)}/>
+                            );
+                        }}
+                    </UploadTracingMutation>
+                </Segment>
+                <Segment attached="bottom">
+                    <Grid fluid="true">
+                        {this.renderPropertiesRow(this.state.samples, this.state.tracingStructures)}
+                    </Grid>
+                </Segment>
+            </div>
         );
     }
 
-    private renderUploadRow() {
-        return (
-            <Row>
-                <Col md={12}>
-                    {this.state.isInUpload ? <Loader/> : null}
-                    <FormGroup>
-                        <ControlLabel>Swc Tracing</ControlLabel>
-                        <InputGroup bsSize="sm">
-                            <Dropzone style={{border: "none"}} disableClick={this.state.isInUpload}
-                                      onDrop={(accepted: any) => this.onDrop(accepted)}>
-                                <FormControl type="test"
-                                             bsSize="sm"
-                                             value={this.state.file ? this.state.file.name : ""}
-                                             onChange={() => {
-                                             }}
-                                             placeholder="Click to select..."/>
-                            </Dropzone>
-                            <InputGroup.Button>
-                                <UploadTracingMutation mutation={UPLOAD_TRACING_MUTATION}
-                                                       onCompleted={(data) => this.onUploadComplete(data)}
-                                                       onError={(error) => this.onUploadError(error)}>
-                                    {(uploadSwc) => {
-                                        return (
-                                            <Button
-                                                bsStyle={!this.canUploadTracing() || this.state.isInUpload ? "default" : "success"}
-                                                disabled={!this.canUploadTracing() || this.state.isInUpload}
-                                                active={this.state.isSampleLocked}
-                                                onClick={() => this.onUploadSwc(uploadSwc)}>
-                                                Upload&nbsp;&nbsp;
-                                                <Glyphicon glyph="cloud-upload"/>
-                                            </Button>
-                                        );
-                                    }}
-                                </UploadTracingMutation>
-                            </InputGroup.Button>
-                        </InputGroup>
-                    </FormGroup>
-                </Col>
-            </Row>
-        );
-    }
+    /*
+        private renderUploadRow() {
+            return (
+                <Grid.Row>
+                    <Grid.Column width={12}>
+                        {this.state.isInUpload ? <Loader/> : null}
+                        <Dropzone disableClick={this.state.isInUpload}
+                                  onDrop={(accepted: any) => this.onDrop(accepted)}>
+                            {this.state.file ? this.state.file.name : null}
+                        </Dropzone>
 
+                                <InputGroup.Button>
+                                    <UploadTracingMutation mutation={UPLOAD_TRACING_MUTATION}
+                                                           onCompleted={(data) => this.onUploadComplete(data)}
+                                                           onError={(error) => this.onUploadError(error)}>
+                                        {(uploadSwc) => {
+                                            return (
+                                                <Button
+                                                    bsStyle={!this.canUploadTracing() || this.state.isInUpload ? "default" : "success"}
+                                                    disabled={!this.canUploadTracing() || this.state.isInUpload}
+                                                    active={this.state.isSampleLocked}
+                                                    onClick={() => this.onUploadSwc(uploadSwc)}>
+                                                    Upload&nbsp;&nbsp;
+                                                    <Glyphicon glyph="cloud-upload"/>
+                                                </Button>
+                                            );
+                                        }}
+                                    </UploadTracingMutation>
+                                </InputGroup.Button>
+
+                    </Grid.Column>
+                </Grid.Row>
+            );
+        }
+    */
     private renderPropertiesRow(samples: ISample[], tracingStructures: ITracingStructure[]) {
         const sampleOptions: DropdownItemProps[] = samples.map(s => {
             return {
@@ -253,77 +257,74 @@ class CreateTracingComponent extends React.Component<ISamplesQueryChildProps, IC
         });
 
         return (
-            <Row>
-                <Col md={3}>
-                    <FormGroup>
-                        <ControlLabel>Sample</ControlLabel>
-                        <InputGroup bsSize="sm">
-                            <Dropdown placeholder={"Select a sample..."} fluid selection options={sampleOptions}
+            <Grid.Row>
+                <Grid.Column width={3} stretched={true}>
+                    File
+                    <Dropzone disableClick={this.state.isInUpload} className="dropzone"
+                              onDrop={(accepted: any) => this.onDrop(accepted)}>
+                        <span style={{textAlign: "center", width: "100%", margin: "10px"}}>
+                            {this.state.file ? this.state.file.name : "drop an SWC file or click to browse for a file"}</span>
+                    </Dropzone>
+                </Grid.Column>
+                <Grid.Column width={3}>
+                    <Form.Field>
+                        <label>Sample</label>
+                        <Button as="div" fluid={true} labelPosition="left">
+                            <Dropdown search fluid={true} selection options={sampleOptions}
+                                      className="label"
+                                      placeholder="Select sample..."
                                       value={this.state.sample ? this.state.sample.id : null}
                                       disabled={this.state.isSampleLocked || this.state.isInUpload}
-                                      onChange={(e, {value}) => this.onSampleChange(value as string)}/>
-                            <InputGroup.Button>
-                                <Button bsStyle={this.state.isSampleLocked ? "danger" : "default"} bsSize="sm"
-                                        disabled={this.state.sample === null || this.state.isInUpload || this.state.samples.length === 0}
-                                        active={this.state.isSampleLocked}
-                                        onClick={() => this.onLockSample()}>
-                                    <Glyphicon glyph="lock"/>
-                                </Button>
-                            </InputGroup.Button>
-                        </InputGroup>
-                    </FormGroup>
-                </Col>
-                <Col md={4}>
-                    <ControlLabel>Neuron</ControlLabel>
-                    <NeuronsForSampleQuery query={NEURONS_QUERY}
-                                           variables={{sampleId: this.state.sample ? this.state.sample.id : null}}>
-                        {({data}) => {
-                            const neurons = data.neurons || [];
-
-                            return (
-                                <NeuronForSampleSelect neurons={neurons} selectedNeuron={this.state.neuron}
-                                                       onNeuronChange={n => this.onNeuronChange(n)}
-                                                       disabled={this.state.sample === null || this.state.isInUpload}/>
-                            );
-                        }}
-                    </NeuronsForSampleQuery>
-                </Col>
-                <Col md={2}>
-                    <ControlLabel>Structure</ControlLabel>
-                    <Dropdown placeholder={"Select the structure..."} fluid selection options={tracingStructureOptions}
-                              value={this.state.structure ? this.state.structure.id : null}
-                              disabled={this.state.isInUpload}
-                              onChange={(e, {value}) => this.onTracingStructureChange(value as string)}/>
-                </Col>
-                <Col md={3}>
-                    <FormGroup controlId="annotatorText"
-                               validationState={this.state.annotator.length > 0 ? "success" : "error"}>
-                        <ControlLabel>Annotator</ControlLabel>
-                        <FormControl type="test" bsSize="sm"
-                                     value={this.state.annotator}
-                                     disabled={this.state.isInUpload}
-                                     placeholder="(required)"
-                                     onChange={(e: any) => this.onAnnotatorChange(e.target.value)}/>
-                    </FormGroup>
-                </Col>
-            </Row>
-        );
-    }
-
-    private renderSelectedSpecificsRow() {
-        return (
-            <Row>
-                <Col md={3} smHidden>
+                                      onChange={(e, {value}) => this.onSampleChange(value as string)}
+                                      style={{fontWeight: "normal"}}/>
+                            <Button compact icon="lock" color={this.state.isSampleLocked ? "red" : null}
+                                    disabled={this.state.sample === null}
+                                    active={this.state.isSampleLocked}
+                                    onClick={() => this.onLockSample()}/>
+                        </Button>
+                    </Form.Field>
                     <SamplePreview sample={this.state.sample}/>
-                </Col>
-                <Col md={4} smHidden>
+                </Grid.Column>
+                <Grid.Column width={4}>
+                    <Form.Field>
+                        <label>Neuron</label>
+                        <NeuronsForSampleQuery query={NEURONS_QUERY}
+                                               variables={{sampleId: this.state.sample ? this.state.sample.id : null}}>
+                            {({data}) => {
+                                const neurons = data.neurons || [];
+
+                                return (
+                                    <NeuronForSampleSelect neurons={neurons} selectedNeuron={this.state.neuron}
+                                                           onNeuronChange={n => this.onNeuronChange(n)}
+                                                           disabled={this.state.sample === null || this.state.isInUpload}/>
+                                );
+                            }}
+                        </NeuronsForSampleQuery>
+                    </Form.Field>
                     <NeuronPreview neuron={this.state.neuron}/>
-                </Col>
-                <Col md={2} smHidden>
-                </Col>
-                <Col md={3} smHidden>
-                </Col>
-            </Row>
+                </Grid.Column>
+                <Grid.Column width={2}>
+                    <Form.Field>
+                        <label>Structure</label>
+                        <Dropdown placeholder={"Select structure..."} fluid={true} selection
+                                  options={tracingStructureOptions}
+                                  value={this.state.structure ? this.state.structure.id : null}
+                                  disabled={this.state.isInUpload}
+                                  onChange={(e, {value}) => this.onTracingStructureChange(value as string)}/>
+                    </Form.Field>
+                </Grid.Column>
+                <Grid.Column width={4}>
+                    <Form.Field>
+                        <label>Annotator</label>
+                        {/* <FormGroup controlId="annotatorText"
+                               validationState={this.state.annotator.length > 0 ? "success" : "error"}>*/}
+                        <Form.Input fluid={true} value={this.state.annotator}
+                                    disabled={this.state.isInUpload}
+                                    placeholder="(required)"
+                                    onChange={(e: any) => this.onAnnotatorChange(e.target.value)}/>
+                    </Form.Field>
+                </Grid.Column>
+            </Grid.Row>
         );
     }
 }

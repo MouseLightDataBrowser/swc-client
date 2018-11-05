@@ -6,11 +6,15 @@ module.exports = {
     entry: [
         "./client/index"
     ],
+
     output: {
         filename: "bundle.js",
         path: dist,
         publicPath: "/"
     },
+
+    mode: "development",
+
     module: {
         rules: [
             {
@@ -19,11 +23,20 @@ module.exports = {
                 exclude: /node_modules/
             },
             {test: /\.css$/, use: "style-loader"},
-            {test: /\.css$/, use: "css-loader"}
+            {test: /\.css$/, use: "css-loader"},
+            // TODO Temporary workaround for apollo-upload-client issues
+            // FIXME
+            {
+                type: 'javascript/auto',
+                test: /\.mjs$/,
+                use: []
+            }
         ]
     },
+
     resolve: {
         extensions: [".tsx", ".ts", ".js"]
     },
+
     devtool: "inline-source-map"
 };

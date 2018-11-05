@@ -1,16 +1,12 @@
 import * as React from "react";
-import {Glyphicon, Modal, Button} from "react-bootstrap";
-
+import {Table, Dropdown, DropdownItemProps, Label} from "semantic-ui-react";
 const moment = require("moment");
 
 import {ISwcTracing} from "../models/swcTracing";
 import {displayNeuron} from "../models/neuron";
 import {displayTracingStructure, ITracingStructure, TracingStructure} from "../models/tracingStructure";
 import {DynamicEditField} from "./editors/DynamicEditField";
-import {Dropdown, DropdownItemProps, Label} from "semantic-ui-react";
 import {
-    DELETE_TRACING_MUTATION,
-    DeleteTracingMutation,
     TRACING_COUNT_FOR_TRACING_QUERY,
     TracingCountTracingQuery,
     UPDATE_TRACING_MUTATION,
@@ -83,7 +79,7 @@ export class TracingRow extends React.Component<ITracingsRowProps, ITracingRowSt
             }
         });
     }
-
+/*
     private async onShowDeleteConfirmation() {
         this.setState({showConfirmDelete: true, isCountingTransforms: true, transformedCount: -1}, null);
     }
@@ -91,7 +87,7 @@ export class TracingRow extends React.Component<ITracingsRowProps, ITracingRowSt
     private onCancelDelete() {
         this.setState({showConfirmDelete: false}, null);
     }
-
+*/
     public render() {
         const tracingStructureOptions: DropdownItemProps[] = this.props.tracingStructures.map(t => {
             return {
@@ -104,7 +100,8 @@ export class TracingRow extends React.Component<ITracingsRowProps, ITracingRowSt
         return (
             <UpdateTracingMutation mutation={UPDATE_TRACING_MUTATION}>
                 {(updateTracing) => (
-                    <tr>
+                    <Table.Row>
+                        {/*
                         <Modal show={this.state.showConfirmDelete} onHide={() => this.onCancelDelete()}>
                             <Modal.Header closeButton>
                                 <h4>Delete entry for {this.props.tracing.filename || "<unknown>"}?</h4>
@@ -126,13 +123,13 @@ export class TracingRow extends React.Component<ITracingsRowProps, ITracingRowSt
                         </Modal>
                         <td><a onClick={() => this.onShowDeleteConfirmation()}><Glyphicon
                             glyph="trash"/></a>&nbsp;{this.props.tracing.filename}
-                        </td>
-                        <td>
+                        </td>*/}
+                        <Table.Cell>
                             <DynamicEditField initialValue={this.props.tracing.annotator}
                                               acceptFunction={value => this.onAcceptAnnotatorEdit(value, updateTracing)}/>
-                        </td>
-                        <td>{displayNeuron(this.props.tracing.neuron)}</td>
-                        <td>
+                        </Table.Cell>
+                        <Table.Cell>{displayNeuron(this.props.tracing.neuron)}</Table.Cell>
+                        <Table.Cell>
                             {this.state.isEditingStructure ?
                                 <div>
                                     <Label style={{verticalAlign: "middle"}} icon="close"
@@ -152,14 +149,14 @@ export class TracingRow extends React.Component<ITracingsRowProps, ITracingRowSt
                                     </Label>
                                 </div>
                             }
-                        </td>
-                        <td>
+                        </Table.Cell>
+                        <Table.Cell>
                             {this.props.tracing.nodeCount}
-                        </td>
-                        <td>
+                        </Table.Cell>
+                        <Table.Cell>
                             {moment(this.props.tracing.createdAt).format("YYYY-MM-DD hh:mm:ss")}
-                        </td>
-                    </tr>
+                        </Table.Cell>
+                    </Table.Row>
                 )}
             </UpdateTracingMutation>
         );

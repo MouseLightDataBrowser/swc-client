@@ -1,8 +1,9 @@
 import * as React from "react";
 
 import {Tracings} from "./components/Tracings";
-import {CreateContainer} from "./components/create/CreateContainer";
 import {ITracingStructure} from "./models/tracingStructure";
+import {CreateTracing} from "./components/create/CreateTracing";
+import {Divider} from "semantic-ui-react";
 
 interface IContentProps {
     tracingStructures: ITracingStructure[];
@@ -11,7 +12,8 @@ interface IContentProps {
 
 export const Content = (props: IContentProps) => (
     <div>
-        <CreateContainer tracingStructures={props.tracingStructures} shouldClearCreateContentsAfterUpload={props.shouldClearCreateContentsAfterUpload}/>
+        <CreateTracing tracingStructures={props.tracingStructures} shouldClearCreateContentsAfterUpload={props.shouldClearCreateContentsAfterUpload}/>
+        <Divider/>
         <Tracings tracingStructures={props.tracingStructures}/>
     </div>
 );

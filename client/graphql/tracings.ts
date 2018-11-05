@@ -1,8 +1,7 @@
 import gql from "graphql-tag";
+import {Mutation, Query} from "react-apollo";
+
 import {ISwcTracing} from "../models/swcTracing";
-import {ITracingStructure} from "../models/tracingStructure";
-import {graphql, Mutation, Query} from "react-apollo";
-import {ApolloError, ApolloQueryResult} from "apollo-client";
 
 const TracingFieldsFragment = gql`fragment TracingFields on SwcTracing {
       id
@@ -54,8 +53,8 @@ ${TracingFieldsFragment}
 type TracingsQueryPageInput = {
     offset: number;
     limit: number;
-    neuronIds: string[];
-    tracingStructureId: string;
+    neuronIds?: string[];
+    tracingStructureId?: string;
 }
 
 type TracingsQueryVariables = {
@@ -73,45 +72,9 @@ type TracingsQueryResponse = {
     tracings: TracingsData;
 }
 
-type TracingsQueryInputProps = {
-    tracingStructures: ITracingStructure[];
-    offset: number;
-    limit: number;
-
-    onUpdateOffsetForPage(page: number): void;
-    onUpdateLimit(limit: number): void;
+export class TracingsQuery extends Query<TracingsQueryResponse, TracingsQueryVariables> {
 }
 
-export interface ITracingsQueryChildProps {
-    loading: boolean,
-    error?: ApolloError,
-    tracings?: TracingsData,
-    refetch: (variables?: TracingsQueryVariables) => Promise<ApolloQueryResult<any>>,
-    tracingStructures: ITracingStructure[];
-    offset: number;
-    limit: number;
-
-    onUpdateOffsetForPage(page: number): void;
-    onUpdateLimit(limit: number): void;
-}
-
-export const TracingsQuery = graphql<TracingsQueryInputProps, TracingsQueryResponse, TracingsQueryVariables, ITracingsQueryChildProps>(TRACINGS_QUERY, {
-    options: ({offset, limit}) => ({
-        pollInterval: 5000,
-        variables: {
-            pageInput: {
-                offset,
-                limit,
-                neuronIds: null,
-                tracingStructureId: null
-            }
-        }
-    }),
-    props: ({data, ownProps}) => ({
-        ...data,
-        ...ownProps
-    })
-});
 
 //
 // Tracing Count (transformed) for Tracing Query

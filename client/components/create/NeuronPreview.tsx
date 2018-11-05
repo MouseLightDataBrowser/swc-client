@@ -1,31 +1,25 @@
 import * as React from "react";
-import {Well} from "react-bootstrap";
+import {Card, Header} from "semantic-ui-react";
 
 import {INeuron} from "../../models/neuron";
-import {formatNodeCoords} from "../../models/swcNode";
+import {formatNodeCoordinates} from "../../models/swcNode";
 
 interface INeuronProps {
     neuron: INeuron
 }
 
-interface INeuronState {
-}
-
-export class NeuronPreview extends React.Component<INeuronProps, INeuronState> {
-    public render() {
-        if (!this.props.neuron) {
-            return null;
-        }
-
-        return (
-            <Well>
-                <h5>Soma Coordinates (unregistered)</h5>
-                {formatNodeCoords(this.props.neuron.x, this.props.neuron.y, this.props.neuron.z)}
-                <h5>Tag</h5>
-                {this.props.neuron.tag || "(none)"}
-                <h5>Keywords</h5>
-                {this.props.neuron.keywords || "(none)"}
-            </Well>
-        );
+export const NeuronPreview = (props: INeuronProps) => {
+    if (!props.neuron) {
+        return null;
     }
-}
+
+    return (
+        <Card fluid={true}>
+            <Card.Content header={props.neuron.tag || "(none)"}/>
+            <Card.Content>
+                <Header as="h5" content="Soma (unregistered)"/>
+                {formatNodeCoordinates(props.neuron.x, props.neuron.y, props.neuron.z)}
+            </Card.Content>
+        </Card>
+    );
+};

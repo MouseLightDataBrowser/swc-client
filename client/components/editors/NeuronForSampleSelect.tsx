@@ -1,6 +1,7 @@
 import * as React from "react";
-import {displayNeuron, INeuron} from "../../models/neuron";
 import {Dropdown, DropdownItemProps} from "semantic-ui-react";
+
+import {displayNeuron, INeuron} from "../../models/neuron";
 
 interface INeuronForSampleSelectCellProps {
     neurons: INeuron[];

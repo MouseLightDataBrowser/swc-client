@@ -1,70 +1,56 @@
 import * as React from "react";
-import {Panel, Table} from "react-bootstrap";
 
 import {ISwcTracing} from "../models/swcTracing";
 import {TracingRow} from "./TracingRow";
-import {PaginationHeader} from "./PaginationHeader";
-import {TracingsQuery, ITracingsQueryChildProps} from "../graphql/tracings";
+import {Table} from "semantic-ui-react";
+import {ITracingStructure} from "../models/tracingStructure";
 
-export const TracingTable = (props: ITracingsQueryChildProps) => {
-    const {loading, error, tracings} = props;
+export interface ITracingsTableProps {
+    tracings: ISwcTracing[];
+    tracingStructures: ITracingStructure[];
+    totalCount: number;
+    offset: number;
+    limit: number;
+    activePage: number;
+    pageCount: number;
 
-    if (loading) return null;
+    onDeleteTracing(tracing: ISwcTracing): void;
+}
 
-    if (error) return (
-        <div>
-            `${error.message}`;
-        </div>
-    );
-
-    const rows = tracings.tracings.map((t: ISwcTracing) => {
+export const TracingsTable = (props: ITracingsTableProps) => {
+    const rows = props.tracings.map((t: ISwcTracing) => {
         return <TracingRow key={`tt_${t.id}`} tracingStructures={props.tracingStructures} tracing={t}/>
     });
 
-    const totalCount = rows ? tracings.totalCount : -1;
-
-    const pageCount = rows ? Math.ceil(tracings.totalCount / props.limit) : 1;
-
-    const activePage = rows ? (props.offset ? (Math.floor(props.offset / props.limit) + 1) : 1) : 0;
+    const start = props.offset + 1;
+    const end = Math.min(props.offset + props.limit, props.totalCount);
 
     return (
-        <Panel collapsible defaultExpanded bsStyle="default" header="Existing"
-               footer={renderFooter(totalCount, activePage, pageCount, props.offset, props.limit)}>
-            <PaginationHeader pageCount={pageCount}
-                              activePage={activePage}
-                              limit={props.limit}
-                              onUpdateLimitForPage={limit => props.onUpdateLimit(limit)}
-                              onUpdateOffsetForPage={page => props.onUpdateOffsetForPage(page)}/>
-            <Table style={{marginBottom: "0px"}}>
-                <thead>
-                <tr>
-                    <th>File</th>
-                    <th>Annotator</th>
-                    <th>Neuron</th>
-                    <th>Structure</th>
-                    <th>Nodes</th>
-                    <th>Uploaded</th>
-                </tr>
-                </thead>
-                <tbody>
+        <Table attached="bottom" compact="very">
+            <Table.Header>
+                <Table.Row>
+                    <Table.HeaderCell>File</Table.HeaderCell>
+                    <Table.HeaderCell>Annotator</Table.HeaderCell>
+                    <Table.HeaderCell>Neuron</Table.HeaderCell>
+                    <Table.HeaderCell>Structure</Table.HeaderCell>
+                    <Table.HeaderCell>Nodes</Table.HeaderCell>
+                    <Table.HeaderCell>Created</Table.HeaderCell>
+                    <Table.HeaderCell/>
+                </Table.Row>
+            </Table.Header>
+            <Table.Body>
                 {rows}
-                </tbody>
-            </Table>
-        </Panel>
+            </Table.Body>
+            <Table.Footer fullwidth="true">
+                <Table.Row>
+                    <Table.HeaderCell colSpan={5}>
+                        {props.totalCount >= 0 ? (props.totalCount > 0 ? `Showing ${start} to ${end} of ${props.totalCount} neurons` : "It's a clean slate - create the first neuron!") : ""}
+                    </Table.HeaderCell>
+                    <Table.HeaderCell colSpan={6} textAlign="right">
+                        {`Page ${props.activePage} of ${props.pageCount}`}
+                    </Table.HeaderCell>
+                </Table.Row>
+            </Table.Footer>
+        </Table>
     )
 };
-
-function renderFooter(totalCount: number, activePage: number, pageCount: number, offset: number, limit: number) {
-    const start = offset + 1;
-    const end = Math.min(offset + limit, totalCount);
-    const count = totalCount >= 0 ? (totalCount > 0 ? `Showing ${start} to ${end} of ${totalCount} tracings` : "It's a clean slate - upload the first tracings!") : "";
-
-    return (
-        <div>
-            <span>{count}</span>
-            <span className="pull-right">{`Page ${activePage} of ${pageCount}`}</span>
-        </div>
-    );
-}
-
-export const TableWithTracings = TracingsQuery(TracingTable);

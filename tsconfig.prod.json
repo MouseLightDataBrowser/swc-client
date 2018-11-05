@@ -6,6 +6,8 @@
     "outDir": "dist"
   },
   "exclude": [
-    "gulpfile.ts"
+    "client",
+    "gulpfile.ts",
+    "webpack.*.ts"
   ]
 }
