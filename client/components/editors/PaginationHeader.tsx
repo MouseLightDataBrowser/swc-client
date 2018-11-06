@@ -26,14 +26,9 @@ export class PaginationHeader extends React.Component<IPaginationHeaderProps, IP
 
         this.state = {
             pageJumpText,
-            isValidPageJump: this.isValidJumpText(pageJumpText),
+            isValidPageJump: isValidJumpText(pageJumpText, props.pageCount),
             limit: props.limit
         }
-    }
-
-    private isValidJumpText(value: string): boolean {
-        const page = parseInt(value);
-        return !isNaN(page) && (page > 0 && page <= this.props.pageCount);
     }
 
     private setActivePage(value: string) {
@@ -48,19 +43,16 @@ export class PaginationHeader extends React.Component<IPaginationHeaderProps, IP
     }
 
     private onKeyPress(evt: any) {
-        if (evt.charCode === 13 && this.isValidJumpText(evt.target.value)) {
+        if (evt.charCode === 13 && isValidJumpText(evt.target.value, this.props.pageCount)) {
             this.setActivePage(evt.target.value);
         }
     }
 
     public componentWillReceiveProps(props: IPaginationHeaderProps) {
-        if (props.activePage !== this.props.activePage) {
-            const pageJumpText = props.activePage.toFixed(0);
-
-            this.setState({pageJumpText, isValidPageJump: this.isValidJumpText(pageJumpText)});
-        }
-
-        this.setState({limit: props.limit});
+        this.setState({
+            limit: props.limit,
+            isValidPageJump: isValidJumpText(props.activePage.toFixed(0), props.pageCount)
+        });
     }
 
     private renderPageJump() {
@@ -124,4 +116,9 @@ export class PaginationHeader extends React.Component<IPaginationHeaderProps, IP
             </Table>
         );
     }
+}
+
+function isValidJumpText(value: string, pageCount: number): boolean {
+    const page = parseInt(value);
+    return !isNaN(page) && (page > 0 && page <= pageCount);
 }

@@ -36,7 +36,7 @@ const TracingFieldsFragment = gql`fragment TracingFields on SwcTracing {
       }
 }`;
 
-export const TRACINGS_QUERY = gql`query ($pageInput: SwcTracingPageInput) {
+export const TRACINGS_QUERY = gql`query TracingsQuery ($pageInput: SwcTracingPageInput) {
   tracings(pageInput: $pageInput) {
     offset
     limit
@@ -80,9 +80,12 @@ export class TracingsQuery extends Query<TracingsQueryResponse, TracingsQueryVar
 // Tracing Count (transformed) for Tracing Query
 //
 
-export const TRACING_COUNT_FOR_TRACING_QUERY = gql`query transformedTracingCount($id: String!) {
-  transformedTracingCount(id: $id) {
-    count
+export const TRACING_COUNTS_FOR_TRACING_QUERY = gql`query TransformedTracingCounts($ids: [String!]) {
+  transformedTracingCounts(ids: $ids) {
+    counts {
+        swcTracingId
+        count
+    }
     error {
       name
       message
@@ -90,23 +93,28 @@ export const TRACING_COUNT_FOR_TRACING_QUERY = gql`query transformedTracingCount
   }
 }`;
 
-type TracingCountForTracingVariables = {
-    id: string;
+type TracingCountsForTracingVariables = {
+    ids: string[];
 }
 
-type TracingCountForTracingData = {
+export type SwcTracingCount = {
+    swcTracingId: string;
     count: number;
+}
+
+type TracingCountsForTracingData = {
+    counts: SwcTracingCount[];
     error: {
         name: string;
         message: string;
     }
 }
 
-type TracingCountForTracingResponse = {
-    transformedTracingCount: TracingCountForTracingData;
+type TracingCountsForTracingResponse = {
+    transformedTracingCounts: TracingCountsForTracingData;
 }
 
-export class TracingCountTracingQuery extends Query<TracingCountForTracingResponse, TracingCountForTracingVariables> {
+export class TracingCountsTracingQuery extends Query<TracingCountsForTracingResponse, TracingCountsForTracingVariables> {
 }
 
 //
@@ -149,37 +157,6 @@ type UpdateTracingMutationResponse = {
 }
 
 export class UpdateTracingMutation extends Mutation<UpdateTracingMutationResponse, UpdateTracingVariables> {
-}
-
-//
-// Delete Tracing Mutation
-//
-
-export const DELETE_TRACING_MUTATION = gql`mutation deleteTracing($id: String!) {
-  deleteTracing(id: $id) {
-    error {
-      name
-      message
-    }
-  }
-}`;
-
-type DeleteTracingVariables = {
-    id: string;
-}
-
-type DeleteTracingMutationData = {
-    error: {
-        name: string;
-        message: string;
-    }
-}
-
-type DeleteTracingMutationResponse = {
-    deleteTracing: DeleteTracingMutationData;
-}
-
-export class DeleteTracingMutation extends Mutation<DeleteTracingMutationResponse, DeleteTracingVariables> {
 }
 
 //
@@ -234,4 +211,35 @@ export type UploadTracingMutationResponse = {
 }
 
 export class UploadTracingMutation extends Mutation<UploadTracingMutationResponse, UploadTracingVariables> {
+}
+
+//
+// Delete Tracing Mutation
+//
+
+export const DELETE_TRACING_MUTATION = gql`mutation deleteTracing($id: String!) {
+  deleteTracing(id: $id) {
+    error {
+      name
+      message
+    }
+  }
+}`;
+
+type DeleteTracingVariables = {
+    id: string;
+}
+
+type DeleteTracingMutationData = {
+    error: {
+        name: string;
+        message: string;
+    }
+}
+
+type DeleteTracingMutationResponse = {
+    deleteTracing: DeleteTracingMutationData;
+}
+
+export class DeleteTracingMutation extends Mutation<DeleteTracingMutationResponse, DeleteTracingVariables> {
 }

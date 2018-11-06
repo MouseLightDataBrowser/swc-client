@@ -1,11 +1,24 @@
 import * as React from "react";
-import {Accordion, Icon, Label, Menu, Message, Segment, Image, Modal, Header, Button, Checkbox} from "semantic-ui-react";
+import {
+    Accordion,
+    Icon,
+    Label,
+    Menu,
+    Message,
+    Segment,
+    Image,
+    Modal,
+    Header,
+    Button,
+    Checkbox,
+    Divider
+} from "semantic-ui-react";
 import {ToastContainer, ToastPosition} from "react-toastify";
 
-import {Content} from "./Content";
 import {SYSTEM_MESSAGE_QUERY, SystemMessageQuery} from "./graphql/systemMessage";
-import {TRACING_STRUCTURES_QUERY, TracingStructuresQuery} from "./graphql/tracingStructures";
-import {ITracingStructure} from "./models/tracingStructure";
+import {CreateTracing} from "./components/create/CreateTracing";
+import {Tracings} from "./components/Tracings";
+import {APP_QUERY, AppQuery} from "./graphql/app";
 
 const logo = require("file-loader!../assets/mouseLight_nb_color.svg");
 
@@ -116,7 +129,7 @@ export class App extends React.Component<{}, IAppState> {
                                 onChangeClearContents={(b: boolean) => this.onChangeClearContents(b)}/>
                 <PageHeader onSettingsClick={() => this.onSettingsClick()}/>
                 <div style={{marginTop: "62px", padding: "20px"}}>
-                    <TracingStructuresQuery query={TRACING_STRUCTURES_QUERY} pollInterval={30000}>
+                    <AppQuery query={APP_QUERY} pollInterval={30000}>
                         {({loading, error, data}) => {
                             if (error) {
                                 return (
@@ -152,14 +165,19 @@ export class App extends React.Component<{}, IAppState> {
                             }
 
                             return (
-                                <Content tracingStructures={data.tracingStructures}
-                                         shouldClearCreateContentsAfterUpload={this.state.shouldClearCreateContentsAfterUpload}/>
+                                <div>
+                                    <CreateTracing tracingStructures={data.tracingStructures} samples={data.samples}
+                                                   shouldClearCreateContentsAfterUpload={this.state.shouldClearCreateContentsAfterUpload}/>
+                                    <Divider/>
+                                    <Tracings tracingStructures={data.tracingStructures}/>
+                                </div>
                             );
                         }}
-                    </TracingStructuresQuery>
+                    </AppQuery>
                 </div>
                 <Segment size="small" attached="bottom" inverted>
-                    Mouse Light Neuron Browser Copyright © 2016 - {(new Date().getFullYear())} Howard Hughes Medical Institute
+                    Mouse Light Neuron Browser Copyright © 2016 - {(new Date().getFullYear())} Howard Hughes Medical
+                    Institute
                 </Segment>
             </div>
         );

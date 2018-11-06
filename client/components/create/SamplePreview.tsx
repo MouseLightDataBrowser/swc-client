@@ -9,32 +9,27 @@ const wellStyleDanger = {
     backgroundColor: "#F2DEDE"
 };
 
-interface ISampleProps {
+type SampleProps = {
     sample: ISample
 }
 
-interface ISampleState {
-}
-
-export class SamplePreview extends React.Component<ISampleProps, ISampleState> {
-    public render() {
-        if (!this.props.sample) {
-            return null;
-        }
-
-        return (
-            <Card fluid={true} style={this.props.sample.injections.length === 0 ? wellStyleDanger : {}}>
-                <Card.Content header={this.props.sample.tag || "( no tag)"}/>
-                <Card.Content>
-                    <Injections injections={this.props.sample.injections}/>
-                    <h5>Animal</h5>
-                    {displaySampleAnimal(this.props.sample)}
-                    <h5>Comments</h5>
-                    {this.props.sample.comment || "(none)"}
-                </Card.Content>
-            </Card>
-        );
+export const SamplePreview = (props: SampleProps) => {
+    if (!props.sample) {
+        return null;
     }
+
+    return (
+        <Card fluid={true} style={props.sample.injections.length === 0 ? wellStyleDanger : {}}>
+            <Card.Content header={props.sample.tag || "( no tag)"}/>
+            <Card.Content>
+                <Injections injections={props.sample.injections}/>
+                <h5>Animal</h5>
+                {displaySampleAnimal(props.sample)}
+                <h5>Comments</h5>
+                {props.sample.comment || "(none)"}
+            </Card.Content>
+        </Card>
+    );
 }
 
 type InjectionsProps = {

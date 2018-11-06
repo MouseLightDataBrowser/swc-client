@@ -1,9 +1,14 @@
 import gql from "graphql-tag";
 import {Query} from "react-apollo";
-
+import {ITracingStructure} from "../models/tracingStructure";
 import {ISample} from "../models/sample";
 
-const SAMPLES_QUERY = gql`query {
+export const APP_QUERY = gql`query AppQuery {
+    tracingStructures {
+        id
+        name
+        value
+    }
     samples {
         id
         idNumber
@@ -26,9 +31,10 @@ const SAMPLES_QUERY = gql`query {
     }
 }`;
 
-type SamplesQueryResponse = {
+type AppQueryQueryResponse = {
+    tracingStructures: ITracingStructure[];
     samples: ISample[];
 }
 
-export class SamplesQuery extends Query<SamplesQueryResponse, {}> {
+export class AppQuery extends Query<AppQueryQueryResponse, {}> {
 }

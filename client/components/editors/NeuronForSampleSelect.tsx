@@ -3,7 +3,8 @@ import {Dropdown, DropdownItemProps} from "semantic-ui-react";
 
 import {displayNeuron, INeuron} from "../../models/neuron";
 
-interface INeuronForSampleSelectCellProps {
+type INeuronForSampleSelectProps = {
+    loading: boolean;
     neurons: INeuron[];
     selectedNeuron: INeuron;
     disabled?: boolean;
@@ -12,10 +13,7 @@ interface INeuronForSampleSelectCellProps {
 }
 
 
-export class NeuronForSampleSelect extends React.Component<INeuronForSampleSelectCellProps, {}> {
-    public constructor(props: INeuronForSampleSelectCellProps) {
-        super(props);
-    }
+export class NeuronForSampleSelect extends React.Component<INeuronForSampleSelectProps, {}> {
 
     private onNeuronChange(neuronId: string) {
         if (!this.props.selectedNeuron || neuronId !== this.props.selectedNeuron.id) {
@@ -24,7 +22,9 @@ export class NeuronForSampleSelect extends React.Component<INeuronForSampleSelec
     }
 
     public render() {
-        const neuronOptions: DropdownItemProps[] = this.props.neurons.map(n => {
+        const neurons = this.props.neurons || [];
+
+        const neuronOptions: DropdownItemProps[] = neurons.map(n => {
             return {
                 key: n.id,
                 text: displayNeuron(n),
@@ -34,10 +34,11 @@ export class NeuronForSampleSelect extends React.Component<INeuronForSampleSelec
 
         return (
             <Dropdown
+                loading={this.props.loading}
                 placeholder={"Select a neuron..."}
                 fluid selection options={neuronOptions}
                 value={this.props.selectedNeuron ? this.props.selectedNeuron.id : null}
-                disabled={this.props.disabled || this.props.neurons.length === 0}
+                disabled={this.props.disabled || neurons.length === 0 || this.props.loading}
                 onChange={(e, {value}) => this.onNeuronChange(value as string)}/>
         );
     }

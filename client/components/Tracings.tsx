@@ -1,10 +1,15 @@
 import * as React from "react";
-import {Header, Segment} from "semantic-ui-react";
+import {Confirm, Header, Segment} from "semantic-ui-react";
 
 import {ITracingStructure} from "../models/tracingStructure";
-import {TRACINGS_QUERY, TracingsQuery} from "../graphql/tracings";
+import {DELETE_TRACING_MUTATION, DeleteTracingMutation, TRACINGS_QUERY, TracingsQuery} from "../graphql/tracings";
 import {PaginationHeader} from "./editors/PaginationHeader";
 import {TracingsTable} from "./TracingTable";
+import {ISwcTracing} from "../models/swcTracing";
+import {displayNeuron} from "../models/neuron";
+import {toast} from "react-toastify";
+import {toastDeleteError} from "./editors/Toasts";
+import {UserPreferences} from "../util/userPreferences";
 
 interface ICreateTracingProps {
     tracingStructures: ITracingStructure[];
@@ -13,6 +18,7 @@ interface ICreateTracingProps {
 interface ICreateTracingState {
     offset?: number;
     limit?: number;
+    requestedTracingForDelete: ISwcTracing;
 }
 
 export class Tracings extends React.Component<ICreateTracingProps, ICreateTracingState> {
@@ -20,18 +26,57 @@ export class Tracings extends React.Component<ICreateTracingProps, ICreateTracin
         super(props);
 
         this.state = {
-            offset: 0,
-            limit: 10
+            offset: UserPreferences.Instance.swcPageOffset,
+            limit: UserPreferences.Instance.swcPageLimit,
+            requestedTracingForDelete: null
         };
     }
 
     private onUpdateOffsetForPage = (page: number) => {
-        this.setState({offset: this.state.limit * (page - 1)}, null);
+        const offset = this.state.limit * (page - 1);
+
+        if (offset !== this.state.offset) {
+            this.setState({offset});
+
+            UserPreferences.Instance.swcPageOffset = offset;
+        }
     };
 
     private onUpdateLimit = (limit: number) => {
-        this.setState({limit: limit}, null);
+        if (limit !== this.state.limit) {
+            let offset = this.state.offset;
+
+            if (offset < limit) {
+                offset = 0;
+            }
+
+            this.setState({offset, limit});
+
+            UserPreferences.Instance.swcPageOffset = offset;
+            UserPreferences.Instance.swcPageLimit = limit;
+        }
     };
+
+
+    private renderDeleteConfirmationModal() {
+        if (!this.state.requestedTracingForDelete) {
+            return null;
+        }
+
+        return <DeleteTracingMutation mutation={DELETE_TRACING_MUTATION} refetchQueries={["TracingsQuery"]}
+                                      onError={(error) => toast.error(toastDeleteError(error), {autoClose: false})}>
+            {(deleteTracing) => (
+                <Confirm open={true} dimmer="blurring"
+                         header="Delete Neuron?"
+                         content={`Are you sure you want to delete the tracing for ${displayNeuron(this.state.requestedTracingForDelete.neuron)}?`}
+                         confirmButton="Delete"
+                         onCancel={() => this.setState({requestedTracingForDelete: null})}
+                         onConfirm={() => {
+                             deleteTracing({variables: {id: this.state.requestedTracingForDelete.id}});
+                             this.setState({requestedTracingForDelete: null});
+                         }}/>)}
+        </DeleteTracingMutation>;
+    }
 
     public render() {
         return (
@@ -46,9 +91,9 @@ export class Tracings extends React.Component<ICreateTracingProps, ICreateTracin
 
                     return (
                         <div>
-                            {/*this.renderDeleteConfirmationModal()*/}
+                            {this.renderDeleteConfirmationModal()}
                             <Segment attached="top" secondary clearing style={{borderBottomWidth: 0}}>
-                                <Header>Existing</Header>
+                                <Header style={{margin: "0"}}>Existing</Header>
                             </Segment>
                             <Segment attached secondary style={{borderBottomWidth: 0}}>
                                 <PaginationHeader pageCount={pageCount} activePage={activePage} limit={this.state.limit}
@@ -60,7 +105,8 @@ export class Tracings extends React.Component<ICreateTracingProps, ICreateTracin
                                            offset={this.state.offset}
                                            limit={this.state.limit} totalCount={totalCount} pageCount={pageCount}
                                            activePage={activePage}
-                                           onDeleteTracing={(t) => {/*this.setState({requestedNeuronForDelete: n})*/
+                                           onDeleteTracing={(t) => {
+                                               this.setState({requestedTracingForDelete: t})
                                            }}/>
                         </div>
                     );

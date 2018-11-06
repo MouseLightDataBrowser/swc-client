@@ -29,7 +29,7 @@ module.exports = {
             // TODO Temporary workaround for apollo-upload-client issues
             // FIXME
             {
-                type: 'javascript/auto',
+                type: "javascript/auto",
                 test: /\.mjs$/,
                 use: []
             }

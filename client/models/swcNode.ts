@@ -18,7 +18,7 @@ export function formatNodeCoordinates(x: number, y: number, z: number) {
     const ny = y ? y.toFixed(1) : "n/a";
     const nz = z ? z.toFixed(1) : "n/a";
 
-    return `(${nx}, ${ny}, ${nz})`;
+    return `${nx}, ${ny}, ${nz}`;
 }
 
 export function formatNodeLocation(node: ISwcNode) {
