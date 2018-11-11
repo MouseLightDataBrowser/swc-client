@@ -5,9 +5,7 @@
     "sourceMap": false,
     "outDir": "dist"
   },
-  "exclude": [
-    "client",
-    "gulpfile.ts",
-    "webpack.*.ts"
+  "include": [
+    "server"
   ]
 }

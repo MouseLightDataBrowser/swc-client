@@ -92,22 +92,25 @@ export class Tracings extends React.Component<ICreateTracingProps, ICreateTracin
                     return (
                         <div>
                             {this.renderDeleteConfirmationModal()}
-                            <Segment attached="top" secondary clearing style={{borderBottomWidth: 0}}>
-                                <Header style={{margin: "0"}}>Existing</Header>
-                            </Segment>
-                            <Segment attached secondary style={{borderBottomWidth: 0}}>
-                                <PaginationHeader pageCount={pageCount} activePage={activePage} limit={this.state.limit}
-                                                  onUpdateLimitForPage={this.onUpdateLimit}
-                                                  onUpdateOffsetForPage={this.onUpdateOffsetForPage}/>
-                            </Segment>
-                            <TracingsTable tracings={data.tracings ? data.tracings.tracings : []}
-                                           tracingStructures={this.props.tracingStructures}
-                                           offset={this.state.offset}
-                                           limit={this.state.limit} totalCount={totalCount} pageCount={pageCount}
-                                           activePage={activePage}
-                                           onDeleteTracing={(t) => {
-                                               this.setState({requestedTracingForDelete: t})
-                                           }}/>
+                            <Segment.Group>
+                                <Segment secondary>
+                                    <Header style={{margin: "0"}}>Existing</Header>
+                                </Segment>
+                                <Segment>
+                                    <PaginationHeader pageCount={pageCount} activePage={activePage}
+                                                      limit={this.state.limit}
+                                                      onUpdateLimitForPage={this.onUpdateLimit}
+                                                      onUpdateOffsetForPage={this.onUpdateOffsetForPage}/>
+                                </Segment>
+                                <TracingsTable tracings={data.tracings ? data.tracings.tracings : []}
+                                               tracingStructures={this.props.tracingStructures}
+                                               offset={this.state.offset}
+                                               limit={this.state.limit} totalCount={totalCount} pageCount={pageCount}
+                                               activePage={activePage}
+                                               onDeleteTracing={(t) => {
+                                                   this.setState({requestedTracingForDelete: t})
+                                               }}/>
+                            </Segment.Group>
                         </div>
                     );
                 }}

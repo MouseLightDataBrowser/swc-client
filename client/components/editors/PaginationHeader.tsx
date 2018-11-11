@@ -97,7 +97,7 @@ export class PaginationHeader extends React.Component<IPaginationHeaderProps, IP
             <Table style={{border: "none", background: "transparent"}}>
                 <Table.Body>
                     <Table.Row>
-                        <Table.Cell style={{width: "33%"}}>
+                        <Table.Cell style={{width: "33%", paddingTop: 0}}>
                             <Slider min={10} max={50} step={5} value={this.state.limit} style={{maxWidth: "300px"}}
                                     marks={{10: "10", 20: "20", 30: "30", 40: "40", 50: "50"}}
                                     onChange={(value: number) => this.setState({limit: value})}
