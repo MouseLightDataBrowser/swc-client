@@ -15,6 +15,8 @@ import {NeuronForSampleSelect} from "../editors/NeuronForSampleSelect";
 import {SamplePreview} from "./SamplePreview";
 import {NeuronPreview} from "./NeuronPreview";
 import {UserPreferences} from "../../util/userPreferences";
+import {TextAlignProperty} from "csstype";
+import {FilePreview} from "./FilePreview";
 
 interface ICreateTracingProps {
     samples: ISample[];
@@ -213,7 +215,7 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
                 <Segment attached="bottom">
                     <Grid fluid="true">
                         <Grid.Row style={{paddingBottom: 0}}>
-                            <Grid.Column width={3}>
+                            <Grid.Column width={5}>
                                 <Form>
                                     <Form.Field>
                                         <label>File</label>
@@ -234,17 +236,10 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
                                     </Form.Field>
                                 </Form>
                             </Grid.Column>
-                            <Grid.Column width={2}>
-                                <Form>
-                                    <Form.Field>
-                                        <label>Structure</label>
-                                    </Form.Field>
-                                </Form>
-                            </Grid.Column>
                             <Grid.Column width={4}>
                                 <Form>
                                     <Form.Field>
-                                        <label>Annotator</label>
+                                        <label>Structure</label>
                                     </Form.Field>
                                 </Form>
                             </Grid.Column>
@@ -275,21 +270,21 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
 
         return (
             <Grid.Row style={{paddingTop: 0}}>
-                <Grid.Column width={3} stretched={true}>
-                    <Dropzone disableClick={this.state.isInUpload} className="dropzone"
-                              style={{
-                                  backgroundColor: this.state.file ? "white" : "rgb(255, 246, 246)",
-                                  borderColor: this.state.file ? "lightgray" : "rgb(224, 180, 180)"
-                              }}
-                              onDrop={(accepted: any) => this.onDrop(accepted)}>
-                        <span style={{
-                            textAlign: "center",
-                            width: "100%",
-                            margin: "10px",
-                            color: this.state.file ? "black" : "rgba(191, 191, 191, 0.870588)"
-                        }}>
-                            {this.state.file ? this.state.file.name : "drop the SWC file or click to browse for a file"}</span>
-                    </Dropzone>
+                <Grid.Column width={5} stretched={true}>
+                    <div style={{display: "flex", flexDirection: "column", minHeight: "400px"}}>
+                        <Dropzone disableClick={this.state.isInUpload} className="dropzone"
+                                  style={{
+                                      order: 0,
+                                      backgroundColor: this.state.file ? "white" : "rgb(255, 246, 246)",
+                                      borderColor: this.state.file ? "lightgray" : "rgb(224, 180, 180)"
+                                  }}
+                                  onDrop={(accepted: any) => this.onDrop(accepted)}>
+                            <span style={NoFileStyle(!this.state.file)}>
+                                {this.state.file ? this.state.file.name : "drop the SWC file or click to browse for a file"}
+                            </span>
+                        </Dropzone>
+                        <FilePreview style={{order: 1, flexGrow: 1, marginTop: "10px"}} file={this.state.file}/>
+                    </div>
                 </Grid.Column>
                 <Grid.Column width={3}>
                     <Button as="div" fluid={true} labelPosition="left">
@@ -324,17 +319,21 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
                     </NeuronsForSampleQuery>
                     <NeuronPreview neuron={this.state.neuron}/>
                 </Grid.Column>
-                <Grid.Column width={2}>
+                <Grid.Column width={4}>
                     <Dropdown placeholder={"Select structure..."} fluid={true} selection
                               options={tracingStructureOptions}
                               value={this.state.structure ? this.state.structure.id : null}
                               disabled={this.state.isInUpload}
                               onChange={(e, {value}) => this.onTracingStructureChange(value as string)}/>
-                </Grid.Column>
-                <Grid.Column width={4}>
-                    <Form.Input fluid={true} value={this.state.annotator} placeholder="(required)"
-                                disabled={this.state.isInUpload} error={this.state.annotator.length === 0}
-                                onChange={(e: any) => this.onAnnotatorChange(e.target.value)}/>
+                    <Form>
+                        <Form.Field>
+                            <label>Annotator</label>
+
+                            <Form.TextArea value={this.state.annotator} placeholder="(required)" rows={6}
+                                           disabled={this.state.isInUpload} error={this.state.annotator.length === 0}
+                                           onChange={(e: any) => this.onAnnotatorChange(e.target.value)}/>
+                        </Form.Field>
+                    </Form>
                 </Grid.Column>
             </Grid.Row>
         );
@@ -360,4 +359,13 @@ const uploadSuccessContent = (output: ISwcUploadOutput) => {
 
 const uploadErrorContent = (error: Error) => {
     return (<div><h3>Upload failed</h3>{error ? error.message : "(no additional details available)"}</div>);
+};
+
+const NoFileStyle = (isMissing: boolean) => {
+    return {
+        textAlign: "center" as TextAlignProperty,
+        width: "100%",
+        margin: "10px",
+        color: isMissing ? "rgba(191, 191, 191, 0.870588)" : "black"
+    };
 };

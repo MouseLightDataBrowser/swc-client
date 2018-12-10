@@ -1,4 +1,4 @@
-const configurations: any = {
+const configurations = {
     port: 5000,
     graphQLPort: 5000,
     graphQLHostname: "swc-api",
@@ -11,7 +11,7 @@ const configurations: any = {
 function loadConfiguration() {
     const config = Object.assign({}, configurations);
 
-    config.port = process.env.SWC_CLIENT_PORT || config.port;
+    config.port = parseInt(process.env.SWC_CLIENT_PORT) || config.port;
     config.graphQLHostname = process.env.SWC_API_HOST || process.env.CORE_SERVICES_HOST || config.graphQLHostname;
     config.graphQLPort = parseInt(process.env.SWC_API_PORT) || config.graphQLPort;
     config.authRequired = process.env.SWC_AUTH_REQUIRED !== "false";
