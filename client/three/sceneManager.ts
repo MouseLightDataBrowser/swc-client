@@ -59,7 +59,7 @@ export class SceneManager {
 
         const fov = 45;
         //const cameraPosition = this.calculateCameraPosition(fov);
-        const cameraPosition = -20000;
+        const cameraPosition = -10000;
         this.camera = new THREE.PerspectiveCamera(fov, width / height, 1, cameraPosition * 5);
         this.scene.add(this.camera);
 
@@ -78,7 +78,9 @@ export class SceneManager {
         this.scene.add(light);
 
         this.trackControls = new OrbitControls(this.camera, container);
-        this.trackControls.addEventListener("change", this.render.bind(this));
+        this.trackControls.addEventListener("change", () => this.render());
+
+        window.addEventListener("resize", () => this.setSize(container.clientWidth, this.renderer.getSize().height));
     };
 
     public animate(timestamp: number = null) {
@@ -91,9 +93,16 @@ export class SceneManager {
             this.render();
         }
 
-        window.requestAnimationFrame(this.animate.bind(this));
+        window.requestAnimationFrame((timestamp: number) => this.animate(timestamp));
     };
 
+    public setSize(width: number, height: number) {
+        this.camera.aspect = width / height;
+        this.camera.updateProjectionMatrix();
+
+        this.renderer.setSize(width, height);
+        this.render();
+    }
 
     public loadNeuron(name: string, color: string, nodes: SwcData) {
         const neuron = this.createNeuron(nodes, color);
@@ -122,13 +131,6 @@ export class SceneManager {
             });
         }
     };
-
-    public setSize(width: number, height: number) {
-        this.camera.aspect = width / height;
-        this.camera.updateProjectionMatrix();
-
-        this.renderer.setSize(width, height);
-    }
 
     public setBackground(color: any) {
         this.backgroundColor = color;
