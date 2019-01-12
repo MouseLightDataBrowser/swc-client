@@ -35,8 +35,6 @@ interface ICreateTracingState {
     sample?: ISample;
     injection?: IInjection;
     isSampleLocked?: boolean;
-
-    isInUpload?: boolean;
 }
 
 export class CreateTracing extends React.Component<ICreateTracingProps, ICreateTracingState> {
@@ -59,8 +57,7 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
             sample,
             neuron: null,
             structure: null,
-            isSampleLocked,
-            isInUpload: false
+            isSampleLocked
         };
     }
 
@@ -140,8 +137,6 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
 
     private async onUploadSwc(uploadSwc: any) {
         if (this.canUploadTracing()) {
-            this.setState({isInUpload: true});
-
             try {
                 uploadSwc({
                     variables: {
@@ -151,10 +146,8 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
                         file: this.state.file
                     }
                 });
-                this.setState({isInUpload: false});
             } catch (error) {
                 toast.error(uploadErrorContent(error), {autoClose: false});
-                this.setState({isInUpload: false});
             }
         }
     }
@@ -162,13 +155,11 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
     private async onUploadComplete(data: UploadTracingMutationResponse) {
         this.resetUploadState();
         toast.success(uploadSuccessContent(data.uploadSwc), {});
-        this.setState({isInUpload: false});
     }
 
     private async onUploadError(error: ApolloError) {
         console.log(error);
         toast.error(uploadErrorContent(error), {autoClose: false});
-        this.setState({isInUpload: false});
     }
 
     public componentWillReceiveProps(props: ICreateTracingProps) {
@@ -198,61 +189,69 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
     public render() {
         return (
             <div>
-                <Segment secondary attached="top"
-                         style={{display: "flex", alignItems: "center", justifyContent: "space-between"}}>
-                    <Header content="Create" style={{margin: "0"}}/>
-                    <UploadTracingMutation mutation={UPLOAD_TRACING_MUTATION}
-                                           onCompleted={(data) => this.onUploadComplete(data)}
-                                           onError={(error) => this.onUploadError(error)}>
-                        {(uploadSwc) => {
-                            return (
-                                <Button content="Upload" icon="upload" size="tiny" labelPosition="right" color="blue"
-                                        disabled={!this.canUploadTracing() || this.state.isInUpload}
-                                        onClick={() => this.onUploadSwc(uploadSwc)}/>
-                            );
-                        }}
-                    </UploadTracingMutation>
-                </Segment>
-                <Segment attached="bottom">
-                    <Grid fluid="true">
-                        <Grid.Row style={{paddingBottom: 0}}>
-                            <Grid.Column width={5}>
-                                <Form>
-                                    <Form.Field>
-                                        <label>File</label>
-                                    </Form.Field>
-                                </Form>
-                            </Grid.Column>
-                            <Grid.Column width={3}>
-                                <Form>
-                                    <Form.Field>
-                                        <label>Sample</label>
-                                    </Form.Field>
-                                </Form>
-                            </Grid.Column>
-                            <Grid.Column width={4}>
-                                <Form>
-                                    <Form.Field>
-                                        <label>Neuron</label>
-                                    </Form.Field>
-                                </Form>
-                            </Grid.Column>
-                            <Grid.Column width={4}>
-                                <Form>
-                                    <Form.Field>
-                                        <label>Structure</label>
-                                    </Form.Field>
-                                </Form>
-                            </Grid.Column>
-                        </Grid.Row>
-                        {this.renderPropertiesRow(this.state.samples, this.state.tracingStructures)}
-                    </Grid>
-                </Segment>
+                <UploadTracingMutation mutation={UPLOAD_TRACING_MUTATION}
+                                       onCompleted={(data) => this.onUploadComplete(data)}
+                                       onError={(error) => this.onUploadError(error)}>
+                    {(uploadSwc, {loading}) => {
+                        return (
+                            <div>
+                                <Segment secondary attached="top"
+                                         style={{
+                                             display: "flex",
+                                             alignItems: "center",
+                                             justifyContent: "space-between"
+                                         }}>
+                                    <Header content="Create" style={{margin: "0"}}/>
+                                    <Button content="Upload" icon="upload" size="tiny" labelPosition="right"
+                                            color="blue"
+                                            disabled={!this.canUploadTracing() || loading}
+                                            onClick={() => this.onUploadSwc(uploadSwc)}/>
+
+                                </Segment>
+                                <Segment attached="bottom">
+                                    <Grid fluid="true">
+                                        <Grid.Row style={{paddingBottom: 0}}>
+                                            <Grid.Column width={5}>
+                                                <Form>
+                                                    <Form.Field>
+                                                        <label>File</label>
+                                                    </Form.Field>
+                                                </Form>
+                                            </Grid.Column>
+                                            <Grid.Column width={3}>
+                                                <Form>
+                                                    <Form.Field>
+                                                        <label>Sample</label>
+                                                    </Form.Field>
+                                                </Form>
+                                            </Grid.Column>
+                                            <Grid.Column width={4}>
+                                                <Form>
+                                                    <Form.Field>
+                                                        <label>Neuron</label>
+                                                    </Form.Field>
+                                                </Form>
+                                            </Grid.Column>
+                                            <Grid.Column width={4}>
+                                                <Form>
+                                                    <Form.Field>
+                                                        <label>Structure</label>
+                                                    </Form.Field>
+                                                </Form>
+                                            </Grid.Column>
+                                        </Grid.Row>
+                                        {this.renderPropertiesRow(this.state.samples, this.state.tracingStructures, loading)}
+                                    </Grid>
+                                </Segment>
+                            </div>
+                        );
+                    }}
+                </UploadTracingMutation>
             </div>
         );
     }
 
-    private renderPropertiesRow(samples: ISample[], tracingStructures: ITracingStructure[]) {
+    private renderPropertiesRow(samples: ISample[], tracingStructures: ITracingStructure[], loading: boolean) {
         const sampleOptions: DropdownItemProps[] = samples.map(s => {
             return {
                 key: s.id,
@@ -273,14 +272,14 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
             <Grid.Row style={{paddingTop: 0}}>
                 <Grid.Column width={5} stretched={true}>
                     <div style={{display: "flex", flexDirection: "column", minHeight: "400px"}}>
-                        <Dropzone disableClick={this.state.isInUpload} className="dropzone"
+                        <Dropzone disableClick={loading} className="dropzone"
                                   style={{
                                       order: 0,
-                                      backgroundColor: this.state.file ? "white" : "rgb(255, 246, 246)",
+                                      backgroundColor: loading ? "rgb(255, 246, 246)" : (this.state.file ? "white" : "rgb(255, 246, 246)"),
                                       borderColor: this.state.file ? "lightgray" : "rgb(224, 180, 180)"
                                   }}
                                   onDrop={(accepted: any) => this.onDrop(accepted)}>
-                            <span style={NoFileStyle(!this.state.file)}>
+                            <span style={NoFileStyle(!this.state.file, loading)}>
                                 {this.state.file ? this.state.file.name : "drop the SWC file or click to browse for a file"}
                             </span>
                         </Dropzone>
@@ -293,7 +292,7 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
                                   className="label"
                                   placeholder="Select sample..."
                                   value={this.state.sample ? this.state.sample.id : null}
-                                  disabled={this.state.isSampleLocked || this.state.isInUpload}
+                                  disabled={this.state.isSampleLocked || loading}
                                   onChange={(e, {value}) => this.onSampleChange(value as string)}
                                   style={{fontWeight: "normal"}}/>
                         <Button compact icon="lock" color={this.state.isSampleLocked ? "red" : null}
@@ -306,15 +305,15 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
                 <Grid.Column width={4}>
                     <NeuronsForSampleQuery query={NEURONS_QUERY} skip={this.state.sample === null}
                                            variables={{sampleId: this.state.sample ? this.state.sample.id : null}}>
-                        {({loading, data}) => {
+                        {(response) => {
                             // data will be undefined if skipped.  data.neurons will be undefined while loading.
-                            const neurons = data ? data.neurons : undefined;
+                            const neurons = response.data ? response.data.neurons : undefined;
 
                             return (
-                                <NeuronForSampleSelect loading={loading} neurons={neurons}
+                                <NeuronForSampleSelect loading={response.loading} neurons={neurons}
                                                        selectedNeuron={this.state.neuron}
                                                        onNeuronChange={n => this.onNeuronChange(n)}
-                                                       disabled={this.state.sample === null || this.state.isInUpload}/>
+                                                       disabled={this.state.sample === null || loading}/>
                             );
                         }}
                     </NeuronsForSampleQuery>
@@ -324,14 +323,14 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
                     <Dropdown placeholder={"Select structure..."} fluid={true} selection
                               options={tracingStructureOptions}
                               value={this.state.structure ? this.state.structure.id : null}
-                              disabled={this.state.isInUpload}
+                              disabled={loading}
                               onChange={(e, {value}) => this.onTracingStructureChange(value as string)}/>
                     <Form>
                         <Form.Field>
                             <label>Annotator</label>
 
                             <Form.TextArea value={this.state.annotator} placeholder="(required)" rows={6}
-                                           disabled={this.state.isInUpload} error={this.state.annotator.length === 0}
+                                           disabled={loading} error={this.state.annotator.length === 0}
                                            onChange={(e: any) => this.onAnnotatorChange(e.target.value)}/>
                         </Form.Field>
                     </Form>
@@ -362,11 +361,11 @@ const uploadErrorContent = (error: Error) => {
     return (<div><h3>Upload failed</h3>{error ? error.message : "(no additional details available)"}</div>);
 };
 
-const NoFileStyle = (isMissing: boolean) => {
+const NoFileStyle = (isMissing: boolean, loading: boolean) => {
     return {
         textAlign: "center" as TextAlignProperty,
         width: "100%",
         margin: "10px",
-        color: isMissing ? "rgba(191, 191, 191, 0.870588)" : "black"
+        color: (isMissing || loading) ? "rgba(191, 191, 191, 0.870588)" : "black"
     };
 };
