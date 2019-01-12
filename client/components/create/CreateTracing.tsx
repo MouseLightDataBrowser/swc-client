@@ -166,6 +166,7 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
     }
 
     private async onUploadError(error: ApolloError) {
+        console.log(error);
         toast.error(uploadErrorContent(error), {autoClose: false});
         this.setState({isInUpload: false});
     }

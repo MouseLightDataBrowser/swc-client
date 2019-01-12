@@ -53,7 +53,9 @@ if (process.env.NODE_ENV !== "production") {
         });
     }
 
-    app.post(`/${ServiceOptions.graphQLEndpoint}`, proxy(`${apiUri}/${ServiceOptions.graphQLEndpoint}`));
+    app.post(`/${ServiceOptions.graphQLEndpoint}`, proxy(`${apiUri}/${ServiceOptions.graphQLEndpoint}`, {
+        limit: "50mb"
+    }));
 
     app.use(express.static(rootPath));
 

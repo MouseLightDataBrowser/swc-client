@@ -9,7 +9,7 @@
   "dockerImageName": "swc-client",
   "scripts": {
     "debug": "DEBUG=ndb* node $NODE_DEBUG_OPTION server/app.js",
-    "express": "DEBUG=mnb* node $NODE_DEBUG_OPTION dist/app.js",
+    "express": "gulp build && DEBUG=ndb* node $NODE_DEBUG_OPTION dist/app.js",
     "docker-build": "gulp docker-build",
     "docker-release": "gulp release"
   },
