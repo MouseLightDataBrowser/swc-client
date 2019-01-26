@@ -37,6 +37,8 @@ export class SceneManager {
     private last_anim_timestamp: number = null;
     private trackControls: any = null;
 
+    private readonly _neurons = new Map<string,THREE.Object3D >();
+
     public constructor(container: HTMLElement) {
         if (container === null) {
             return;
@@ -109,10 +111,17 @@ export class SceneManager {
 
         neuron.name = name;
         this.scene.add(neuron);
+
         if (this.centerPoint !== null) {
             neuron.position.set(-this.centerPoint.x, -this.centerPoint.y, -this.centerPoint.z);
         }
+
+        this._neurons.set(name, neuron);
     };
+
+    public removeAll() {
+        this.scene.remove(...this.scene.children);
+    }
 
     /*
     public unloadNeuron(filename: any) {

@@ -100,6 +100,8 @@ export class FilePreview extends React.Component<FilePreviewProps, FilePreviewSt
 
                 nodes.map(n => swcData.set(n.sampleNumber, n));
 
+                this._sceneManager.removeAll();
+
                 this._sceneManager.loadNeuron("sample", "#000000", swcData);
             }
         });
