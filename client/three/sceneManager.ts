@@ -1,4 +1,7 @@
+import * as path from "path";
 import THREE = require("three");
+
+require("three-obj-loader")(THREE);
 
 const OrbitControls = require("ndb-three-orbit-controls")(THREE);
 
@@ -30,14 +33,20 @@ export class SceneManager {
     public flipYAxis = true;
 
     public centerPoint: THREE.Vector3 = new THREE.Vector3(0.0, 0.0, 0.0);
+    public compartmentOffset: THREE.Vector3 = new THREE.Vector3(5687.5436, 3849.609985, 6595.3813);
+
+    public compartmentUrl = "/static/allen/obj/";
 
     private renderer: THREE.WebGLRenderer = null;
     private readonly scene: THREE.Scene;
     private readonly camera: THREE.PerspectiveCamera = null;
+    private readonly neuronGroup: THREE.Group;
+    private readonly compartmentGroup: THREE.Group;
+
     private last_anim_timestamp: number = null;
     private trackControls: any = null;
 
-    private readonly _neurons = new Map<string,THREE.Object3D >();
+    private readonly _neurons = new Map<string, THREE.Object3D>();
 
     public constructor(container: HTMLElement) {
         if (container === null) {
@@ -61,7 +70,7 @@ export class SceneManager {
 
         const fov = 45;
         //const cameraPosition = this.calculateCameraPosition(fov);
-        const cameraPosition = -10000;
+        const cameraPosition = -15000;
         this.camera = new THREE.PerspectiveCamera(fov, width / height, 1, cameraPosition * 5);
         this.scene.add(this.camera);
 
@@ -79,10 +88,16 @@ export class SceneManager {
         light.position.set(0, 0, -10000);
         this.scene.add(light);
 
+        this.neuronGroup = new THREE.Group();
+        this.scene.add(this.neuronGroup);
+
+        this.compartmentGroup = new THREE.Group();
+        this.scene.add(this.compartmentGroup);
+
         this.trackControls = new OrbitControls(this.camera, container);
         this.trackControls.addEventListener("change", () => this.render());
 
-        window.addEventListener("resize", () => this.setSize(container.clientWidth, this.renderer.getSize().height));
+        window.addEventListener("resize", () => this.setSize(container.clientWidth, container.clientHeight/*this.renderer.getSize().height*/));
     };
 
     public animate(timestamp: number = null) {
@@ -110,76 +125,34 @@ export class SceneManager {
         const neuron = this.createNeuron(nodes, color);
 
         neuron.name = name;
-        this.scene.add(neuron);
 
         if (this.centerPoint !== null) {
             neuron.position.set(-this.centerPoint.x, -this.centerPoint.y, -this.centerPoint.z);
         }
 
         this._neurons.set(name, neuron);
+
+        this.neuronGroup.add(neuron);
     };
 
-    public removeAll() {
-        this.scene.remove(...this.scene.children);
+    public removeAllNeurons() {
+        this.neuronGroup.remove(...this.neuronGroup.children);
     }
 
-    /*
-    public unloadNeuron(filename: any) {
-        const neuron = this.scene.getObjectByName(filename);
-        this.scene.remove(neuron);
+    public loadCompartment(id: string, geometryFile: string, color: string) {
+        const loader = new THREE.OBJLoader();
+
+        const url = path.join(this.compartmentUrl + geometryFile);
+
+        loader.load(url, (object: THREE.Group) => this.createCompartment(object, id, color),
+            (xhr) => this.onCompartmentLoadProgress(xhr),
+            (xhr) => this.onCompartmentLoadError(xhr));
     };
 
-    public setNeuronVisible(id: string, visible: boolean) {
-        const neuron = this.scene.getObjectByName(id);
-
-        if (neuron) {
-            neuron.children.map((c: any) => {
-                if (c.userData.materialShader) {
-                    c.userData.materialShader.uniforms.alpha.value = visible ? 1.0 : 0.0;
-                }
-            });
-        }
-    };
-
-    public setBackground(color: any) {
-        this.backgroundColor = color;
-        this.renderer.setClearColor(this.backgroundColor, 1);
+    public unloadCompartment(id: string) {
+        const selectedObj = this.scene.getObjectByName(id);
+        this.scene.remove(selectedObj);
     }
-
-    private calculateBoundingBox(swc_json: any) {
-        const boundingBox = {
-            xmin: Infinity,
-            xmax: -Infinity,
-            ymin: Infinity,
-            ymax: -Infinity,
-            zmin: Infinity,
-            zmax: -Infinity
-        };
-
-        for (const node in swc_json) {
-            if (swc_json.hasOwnProperty(node)) {
-                if (swc_json[node].x < boundingBox.xmin) boundingBox.xmin = swc_json[node].x;
-                if (swc_json[node].x > boundingBox.xmax) boundingBox.xmax = swc_json[node].x;
-                if (swc_json[node].y < boundingBox.ymin) boundingBox.ymin = swc_json[node].y;
-                if (swc_json[node].y > boundingBox.ymax) boundingBox.ymax = swc_json[node].y;
-                if (swc_json[node].z < boundingBox.zmin) boundingBox.zmin = swc_json[node].z;
-                if (swc_json[node].z > boundingBox.zmax) boundingBox.zmax = swc_json[node].z;
-            }
-        }
-        return boundingBox;
-    };
-
-    //calculates camera position based on bounding box
-    private calculateCameraPosition(fov: any, center: any, boundingBox: any) {
-        const x1 = Math.floor(center[0] - boundingBox.xmin) * 2;
-        const x2 = Math.floor(boundingBox.xmax - center[0]) * 2;
-        const y1 = Math.floor(center[1] - boundingBox.ymin) * 2;
-        const y2 = Math.floor(boundingBox.ymax - center[1]) * 2;
-        const max_bb = Math.max(x1, x2, y1, y2);
-        //fudge factor 1.15 to ensure whole neuron fits
-        return (max_bb / (Math.tan(fov * (Math.PI / 180.0) / 2) * 2)) * 1.15;
-    };
-    */
 
     private generateSkeleton(node: any, node_parent: any) {
         const vertex = new THREE.Vector3(node.x, node.y, node.z);
@@ -214,7 +187,67 @@ export class SceneManager {
         return neuron;
     };
 
+    private createCompartment(object: THREE.Group, id: string, color: string) {
+        object.traverse((child: THREE.Mesh) => {
+            child.material = new THREE.ShaderMaterial({
+                uniforms: {
+                    color: {type: 'c', value: new THREE.Color('#' + color)},
+                },
+                vertexShader: `
+					#line 585
+					varying vec3 normal_in_camera;
+					varying vec3 view_direction;
+
+					void main() {
+						vec4 pos_in_camera = modelViewMatrix * vec4(position, 1.0);
+						gl_Position = projectionMatrix * pos_in_camera;
+						normal_in_camera = normalize(mat3(modelViewMatrix) * normal);
+						view_direction = normalize(pos_in_camera.xyz);
+					}
+				`,
+                fragmentShader: `
+                	#line 597
+                	uniform vec3 color;
+					varying vec3 normal_in_camera;
+					varying vec3 view_direction;
+
+					void main() {
+						// Make edges more opaque than center
+						float edginess = 1.0 - abs(dot(normal_in_camera, view_direction));
+						float opacity = clamp(edginess - 0.30, 0.0, 0.5);
+						// Darken compartment at the very edge
+						float blackness = pow(edginess, 4.0) - 0.3;
+						vec3 c = mix(color, vec3(0,0,0), blackness);
+						gl_FragColor = vec4(c, opacity);
+					}
+				`,
+                transparent: true,
+                depthTest: true,
+                depthWrite: false,
+                side: THREE.DoubleSide,
+            });
+        });
+
+        object.name = id;
+
+        if (this.centerPoint !== null) {
+            object.position.set(-(this.centerPoint.x + this.compartmentOffset.x),
+                -(this.centerPoint.y + this.compartmentOffset.y),
+                -(this.centerPoint.z + this.compartmentOffset.z));
+        }
+
+        this.scene.add(object);
+    }
+
+    private onCompartmentLoadProgress(xhr: any) {
+        console.log(xhr);
+    }
+
+    private onCompartmentLoadError(xhr: any) {
+        console.log(xhr);
+    }
+
     private render() {
         this.renderer.render(this.scene, this.camera);
-    };
+    }
 }

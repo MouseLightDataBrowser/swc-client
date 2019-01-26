@@ -34,6 +34,9 @@ passport.deserializeUser(function (id: any, done: any) {
 const apiUri = `http://${ServiceOptions.graphQLHostname}:${ServiceOptions.graphQLPort}`;
 debug(`proxy GraphQL calls to ${apiUri}/${ServiceOptions.graphQLEndpoint}`);
 
+const staticUri = `http://${ServiceOptions.staticHostname}:${ServiceOptions.staticPort}`;
+debug(`proxy static resource calls to ${staticUri}/${ServiceOptions.staticEndpoint}`);
+
 let app = null;
 
 if (process.env.NODE_ENV !== "production") {
@@ -78,6 +81,10 @@ function devServer() {
         proxy: {
             [`/${ServiceOptions.graphQLEndpoint}`]: {
                 target: apiUri
+            },
+
+            [`/${ServiceOptions.staticEndpoint}`]: {
+                target: staticUri
             }
         },
         disableHostCheck: true,

@@ -17,3 +17,12 @@
     border-radius: 4px;
     background-color: rgb(243, 244, 245);
 }
+
+.dropzone-no-border {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    min-height: 80px;
+    border: none;
+    background-color: rgb(243, 244, 245);
+}

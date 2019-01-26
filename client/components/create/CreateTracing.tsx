@@ -1,6 +1,6 @@
 import * as React from "react";
 import {ApolloError} from "apollo-client";
-import {Dropdown, DropdownItemProps, Form, Grid, Header, Label, Segment, Button} from "semantic-ui-react";
+import {Dropdown, DropdownItemProps, Form, Grid, Header, Label, Segment, Button, Confirm} from "semantic-ui-react";
 import Dropzone = require("react-dropzone");
 import {toast} from "react-toastify";
 
@@ -16,7 +16,7 @@ import {SamplePreview} from "./SamplePreview";
 import {NeuronPreview} from "./NeuronPreview";
 import {UserPreferences} from "../../util/userPreferences";
 import {TextAlignProperty} from "csstype";
-import {FilePreview} from "./FilePreview";
+import {FilePreview, SwcInputFile} from "./FilePreview";
 
 interface ICreateTracingProps {
     samples: ISample[];
@@ -29,12 +29,15 @@ interface ICreateTracingState {
     tracingStructures?: ITracingStructure[];
 
     file?: File;
+    isFileAlertOpen?: boolean;
+    invalidFileName?: string;
     annotator?: string;
     structure?: ITracingStructure;
     neuron?: INeuron;
     sample?: ISample;
     injection?: IInjection;
     isSampleLocked?: boolean;
+    swcInputFile?: SwcInputFile;
 }
 
 export class CreateTracing extends React.Component<ICreateTracingProps, ICreateTracingState> {
@@ -53,11 +56,14 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
             samples: props.samples,
             tracingStructures: props.tracingStructures,
             file: null,
+            isFileAlertOpen: false,
+            invalidFileName: "",
             annotator: "",
             sample,
             neuron: null,
             structure: null,
-            isSampleLocked
+            isSampleLocked,
+            swcInputFile: null
         };
     }
 
@@ -101,18 +107,6 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
     private onDrop(acceptedFiles: File[]) {
         if (acceptedFiles && acceptedFiles.length > 0) {
             this.setState({file: acceptedFiles[0]});
-            /*
-                        const reader = new FileReader();
-
-                        reader.onload = (data) => {
-                            if (data.loaded) {
-                                console.log(data.target.result);
-                            }
-                        };
-
-                        reader.readAsText(acceptedFiles[0]);
-                        */
-
         } else {
             this.setState({file: null});
         }
@@ -189,6 +183,9 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
     public render() {
         return (
             <div>
+                <Confirm content={`${this.state.invalidFileName} does not appear to contain SWC data.`}
+                         open={this.state.isFileAlertOpen} cancelButton={null}
+                         onConfirm={() => this.setState({isFileAlertOpen: false})}/>
                 <UploadTracingMutation mutation={UPLOAD_TRACING_MUTATION}
                                        onCompleted={(data) => this.onUploadComplete(data)}
                                        onError={(error) => this.onUploadError(error)}>
@@ -271,20 +268,38 @@ export class CreateTracing extends React.Component<ICreateTracingProps, ICreateT
         return (
             <Grid.Row style={{paddingTop: 0}}>
                 <Grid.Column width={5} stretched={true}>
-                    <div style={{display: "flex", flexDirection: "column", minHeight: "400px"}}>
-                        <Dropzone disableClick={loading} className="dropzone"
-                                  style={{
-                                      order: 0,
-                                      backgroundColor: loading ? "rgb(255, 246, 246)" : (this.state.file ? "white" : "rgb(255, 246, 246)"),
-                                      borderColor: this.state.file ? "lightgray" : "rgb(224, 180, 180)"
-                                  }}
-                                  onDrop={(accepted: any) => this.onDrop(accepted)}>
+                    <Segment.Group>
+                        <Segment style={{padding: 0}}>
+                            <Dropzone disableClick={loading} className="dropzone-no-border"
+                                      style={{
+                                          order: 0,
+                                          backgroundColor: loading ? "rgb(255, 246, 246)" : (this.state.file ? "white" : "rgb(255, 230, 230)")
+                                      }}
+                                      onDrop={(accepted: File[]) => this.onDrop(accepted)}>
                             <span style={NoFileStyle(!this.state.file, loading)}>
-                                {this.state.file ? this.state.file.name : "drop the SWC file or click to browse for a file"}
+                                {this.state.file ? this.state.file.name : "drop a SWC file or click to browse for a file"}
                             </span>
-                        </Dropzone>
-                        <FilePreview style={{order: 1, flexGrow: 1, marginTop: "10px"}} file={this.state.file}/>
-                    </div>
+                            </Dropzone>
+                        </Segment>
+                        <Segment style={{padding: 0}}>
+                            <div style={{display: "flex", flexDirection: "column", height: "400px"}}>
+                                <FilePreview style={{order: 1, flexGrow: 1, border: "none", margin: 0}}
+                                             file={this.state.file}
+                                             onFileReceived={(file: File) => this.onDrop([file])}
+                                             onFileIsInvalid={() => {
+                                                 this.setState({
+                                                     isFileAlertOpen: true,
+                                                     invalidFileName: this.state.file ? this.state.file.name : ""
+                                                 });
+                                                 this.onDrop(null)
+                                             }}
+                                             onFileLoaded={(inputFile) => this.setState({swcInputFile: inputFile})}/>
+                            </div>
+                        </Segment>
+                        <Segment style={{display: this.state.file !== null ? "block" : "none"}}>
+                            {this.state.swcInputFile ? `Node Count: ${this.state.swcInputFile.nodeCount}` : ""}
+                        </Segment>
+                    </Segment.Group>
                 </Grid.Column>
                 <Grid.Column width={3}>
                     <Button as="div" fluid={true} labelPosition="left">
