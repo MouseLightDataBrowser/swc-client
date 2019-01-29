@@ -49,12 +49,6 @@ export class FilePreview extends React.Component<FilePreviewProps, FilePreviewSt
     }
 
     public render() {
-        /*
-        const style = Object.assign({}, this.props.style || {}, {
-            border: "1px solid lightgray",
-            borderRadius: "4px"
-        });
-        */
         const style = Object.assign({}, this.props.style || {}, {
             border: "none"
         });

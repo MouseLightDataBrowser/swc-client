@@ -60,6 +60,9 @@ if (process.env.NODE_ENV !== "production") {
         limit: "50mb"
     }));
 
+    debug(`proxying ${ServiceOptions.staticEndpoint} to ${staticUri}`);
+    app.use(`${ServiceOptions.staticEndpoint}`, proxy(`${staticUri}`, {proxyReqPathResolver: (req: Request) => "/static" + req.url}));
+
     app.use(express.static(rootPath));
 
     app.use("/", (req: any, res: any) => {
@@ -82,7 +85,6 @@ function devServer() {
             [`/${ServiceOptions.graphQLEndpoint}`]: {
                 target: apiUri
             },
-
             [`/${ServiceOptions.staticEndpoint}`]: {
                 target: staticUri
             }
