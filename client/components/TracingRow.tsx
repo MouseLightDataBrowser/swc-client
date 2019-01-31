@@ -79,6 +79,38 @@ export class TracingRow extends React.Component<ITracingsRowProps, ITracingRowSt
         });
     }
 
+
+    private async onExportTracing(id: string) {
+        try {
+            fetch("/swc", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    id
+                })
+            }).then(async (response) => {
+                if (response.status !== 200) {
+                    return;
+                }
+                const data: any = await response.json();
+
+                let contents = data.contents;
+
+                let mime = "text/plain;charset=utf-8";
+
+                contents = dataToBlob(contents);
+
+                saveFile(contents, `${data.id}.swc`, mime);
+            }).catch((err) => {
+                console.log(err)
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     public render() {
         const tracingStructureOptions: DropdownItemProps[] = this.props.tracingStructures.map(t => {
             return {
@@ -95,7 +127,9 @@ export class TracingRow extends React.Component<ITracingsRowProps, ITracingRowSt
                 {(updateTracing) => (
                     <Table.Row>
                         <Table.Cell>
+                            <a onClick={() => this.onExportTracing(this.props.tracing.id)}>
                             {this.props.tracing.filename}
+                            </a>
                         </Table.Cell>
                         <Table.Cell>
                             <DynamicEditField initialValue={this.props.tracing.annotator}
@@ -143,4 +177,34 @@ export class TracingRow extends React.Component<ITracingsRowProps, ITracingRowSt
             </UpdateTracingMutation>
         );
     }
+}
+
+function saveFile(data: any, filename: string, mime: string = null) {
+    const blob = new Blob([data], {type: mime || "text/plain;charset=utf-8"});
+
+    if (typeof window.navigator.msSaveBlob !== "undefined") {
+        window.navigator.msSaveBlob(blob, filename);
+    } else {
+        const blobURL = window.URL.createObjectURL(blob);
+        const tempLink = document.createElement("a");
+        tempLink.href = blobURL;
+        tempLink.setAttribute("download", filename);
+        document.body.appendChild(tempLink);
+        tempLink.click();
+        document.body.removeChild(tempLink);
+    }
+}
+
+function dataToBlob(encoded: string) {
+    const byteString = atob(encoded);
+
+    const ab = new ArrayBuffer(byteString.length);
+
+    const ia = new Uint8Array(ab);
+
+    for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+    }
+
+    return ab;
 }

@@ -37,6 +37,9 @@ debug(`proxy GraphQL calls to ${apiUri}/${ServiceOptions.graphQLEndpoint}`);
 const staticUri = `http://${ServiceOptions.staticHostname}:${ServiceOptions.staticPort}`;
 debug(`proxy static resource calls to ${staticUri}/${ServiceOptions.staticEndpoint}`);
 
+const swcUri = `http://${ServiceOptions.graphQLHostname}:${ServiceOptions.graphQLPort}`;
+debug(`proxy swc download calls to ${swcUri}/swc`);
+
 let app = null;
 
 if (process.env.NODE_ENV !== "production") {
@@ -61,7 +64,10 @@ if (process.env.NODE_ENV !== "production") {
     }));
 
     debug(`proxying ${ServiceOptions.staticEndpoint} to ${staticUri}`);
-    app.use(`${ServiceOptions.staticEndpoint}`, proxy(`${staticUri}`, {proxyReqPathResolver: (req: Request) => "/static" + req.url}));
+    app.use(`/${ServiceOptions.staticEndpoint}`, proxy(`${staticUri}`, {proxyReqPathResolver: (req: Request) => `/${ServiceOptions.staticEndpoint}` + req.url}));
+
+    debug(`proxying ${ServiceOptions.staticEndpoint} to ${swcUri}`);
+    app.use(`/swc`, proxy(`${swcUri}`, {proxyReqPathResolver: (req: Request) => "/swc" + req.url}));
 
     app.use(express.static(rootPath));
 
@@ -87,6 +93,9 @@ function devServer() {
             },
             [`/${ServiceOptions.staticEndpoint}`]: {
                 target: staticUri
+            },
+            [`/swc`]: {
+                target: swcUri
             }
         },
         disableHostCheck: true,
