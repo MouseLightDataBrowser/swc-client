@@ -17,6 +17,10 @@ export interface INeuron {
 export function displayNeuron(neuron: INeuron): string {
     const name =  neuron ? neuron.idString : "(none)";
 
+    if (!neuron) {
+        return name;
+    }
+
     const brainArea = displayBrainArea(neuron.brainArea || (neuron.injection ? neuron.injection.brainArea : null));
 
     return `${name} (${brainArea})`;
