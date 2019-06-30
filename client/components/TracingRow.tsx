@@ -164,12 +164,9 @@ export class TracingRow extends React.Component<ITracingsRowProps, ITracingRowSt
                             {moment(this.props.tracing.createdAt).format("YYYY-MM-DD hh:mm:ss")}
                         </Table.Cell>
                         <Table.Cell style={{minWidth: "110px"}}>
-                            {count !== undefined ? (count === 0 ?
-                                <Button icon="trash" color="red" size="mini" content="delete" labelPosition="left"
-                                        onClick={() => {
-                                            this.props.onDeleteTracing(this.props.tracing)
-                                        }}/> :
-                                <Label>{count}<Label.Detail>transformed</Label.Detail></Label>) : "?"
+                            {count !== undefined ? (
+                                <Button icon="trash" color="red" size="mini" content={`${count} tracings`} labelPosition="left"
+                                        onClick={() => this.props.onDeleteTracing(this.props.tracing)}/>) : "?"
                             }
                         </Table.Cell>
                     </Table.Row>

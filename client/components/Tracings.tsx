@@ -67,8 +67,8 @@ export class Tracings extends React.Component<ICreateTracingProps, ICreateTracin
                                       onError={(error) => toast.error(toastDeleteError(error), {autoClose: false})}>
             {(deleteTracing) => (
                 <Confirm open={true} dimmer="blurring"
-                         header="Delete Neuron?"
-                         content={`Are you sure you want to delete the tracing for ${displayNeuron(this.state.requestedTracingForDelete.neuron)}?`}
+                         header="Delete SWC Tracing?"
+                         content={`Are you sure you want to delete ${this.state.requestedTracingForDelete.filename} and any related transform tracings for ${displayNeuron(this.state.requestedTracingForDelete.neuron)}?`}
                          confirmButton="Delete"
                          onCancel={() => this.setState({requestedTracingForDelete: null})}
                          onConfirm={() => {
